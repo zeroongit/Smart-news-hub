@@ -1,0 +1,20 @@
+import Navbar from '../components/Navbar.jsx'
+
+const Dashboard = () => {
+    const name = localStorage.getItem('name') || 'Admin'
+
+    return (
+        <>
+            <Navbar />
+            <main className='p-6 min-h-sscreen bg-gray-100 text-fray-800'>
+                <h2 className='text-2xl font-bold mb-6'>Admin Dashboard</h2>
+                <div className='bg-white p-6 rounded shadow'>
+                    <p className='text-lg'>Halo, <strong>{name}</strong> 👋</p>
+                    <p className='mt-2'>Selamat datang di panel admin, Di sini Anda bisa mengelola absensi, job dan artikel berita.</p>
+                </div>
+            </main>
+        </>
+    );
+};
+
+export default Dashboard;
