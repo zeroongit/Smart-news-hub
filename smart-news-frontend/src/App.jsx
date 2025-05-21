@@ -11,6 +11,7 @@ import NewsCreate from './pages/news/NewsCreate';
 import Absensi from './pages/Absensi';
 import Job from './pages/Job';
 import Profile from './pages/Profile';
+import NewsEdit from './pages/news/NewsEdit';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
@@ -59,6 +60,14 @@ function App() {
               <Absensi />
             </PrivateRoute>
           }
+        />
+        <Route
+        path='/news/:id/edit'
+        element={
+          <PrivateRoute>
+            <NewsEdit />
+          </PrivateRoute>
+        }
         />
         <Route
           path="/job"

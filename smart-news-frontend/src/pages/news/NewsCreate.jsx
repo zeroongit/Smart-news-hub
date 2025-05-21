@@ -5,22 +5,63 @@ const NewsCreate = () => {
     const navigate= useNavigate('');
     const [title, setTitle] = useState('');
     const  [content, setContent] = useState('');
+    const [image, setImage] = useState(null);
+    const [imageUrl, setImageUrl] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleUpload = async () => {
+        if (!image) return '';
+
+        const formData = new FormData();
+        formData.append('image', image);
+
+        try {
+            const res =await fetch("http://localhost:5000/api/upload", {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+            setImageUrl(data.imageUrl);
+            return data.imageUrl;
+        } catch (err) {
+            console.error("Upload error:", err);
+            return '';
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const uploadedImage = await handleUpload();
+
         const newArticle = {
-            id: Date.now(),
             title,
             content,
+            image: uploadedImage,
             author: localStorage.getItem('name') || 'Anonymous',
             createdAt: new Date().toISOString(),
         };
 
-        console.log('artikel baru:', newArticle);
+        try {
+            const res = await fetch('http://localhost:5000/api/news', {
+                method: 'POST',
+                header: {
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify(newArticle)
+            });
 
-        alert('Artikel berhasil dibuat!');
-        navigate('/home');
+            if (res.ok) {
+                alert('Artikel berhasil dibuat!');
+                navigate('/home');
+            } else {
+                const err = await res.json();
+                alert('Gagal membuat artikel: ' +  err.error);
+            }
+        } catch (err) {
+            console.error('Error saat mengirim artikel:', err);
+            alert('Terjadi kesalahan server.')
+        }
     };
 
     return (
