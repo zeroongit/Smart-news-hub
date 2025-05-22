@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
         res.json(news);
     } catch (err) {
       console.error("error backend:", err);
-        res.status(500).json({error: 'Gaagal mengambil berita'});
+        res.status(500).json({error: 'Gagal mengambil berita'});
     }
 });
 

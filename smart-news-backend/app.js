@@ -5,6 +5,8 @@ const multer = require('multer');
 const path = require('path');
 require('dotenv').config();
 
+console.log('MONGO_URI:', process.env.MONGO_URI);
+
 const app = express();
 
 app.use(cors());
@@ -24,8 +26,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 app.use('/api/upload', uploadRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
+    serverSelectionTimeoutMS: 30000 // 30 detik
 })
 .then(() => console.log('MongoDB Connected'))
 .catch(err => console.error("MongoDB error:", err));
