@@ -4,11 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 const Navbar = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user'));
+  const role = user?.role;
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('email'); // Hapus juga email dan nama
+    localStorage.removeItem('email');
     localStorage.removeItem('name');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
@@ -35,6 +38,16 @@ const Navbar = () => {
                 Profil
               </Link>
             </li>
+
+            {/* Admin Dashboard */}
+            {role === 'admin' && (
+              <li>
+                <Link to="/admin/dashboard" className="hover:text-sky-400">
+                  Admin Dashboard
+                </Link>
+              </li>
+            )}
+
             <li>
               <button
                 onClick={handleLogout}

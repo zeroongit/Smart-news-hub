@@ -6,7 +6,8 @@ const newsSchema = new mongoose.Schema({
   content: { type: String, required: true },
   image: String,
   author: String,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  isApproved: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('News', newsSchema);

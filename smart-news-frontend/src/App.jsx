@@ -13,6 +13,7 @@ import Job from './pages/Job';
 import Profile from './pages/Profile';
 import NewsEdit from './pages/news/NewsEdit';
 import PrivateRoute from './components/PrivateRoute';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -76,6 +77,14 @@ function App() {
               <Job />
             </PrivateRoute>
           }
+        />
+        <Route
+        path='/admin/dashboard'
+        element={
+          <PrivateRoute>
+            <AdminDashboard />
+          </PrivateRoute>
+        }
         />
       </Routes>
     </BrowserRouter>

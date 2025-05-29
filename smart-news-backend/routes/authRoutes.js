@@ -1,51 +1,55 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 const router = express.Router();
 
-const User = require('../models/User');
-
-// REGISTER
+// Register
 router.post('/register', async (req, res) => {
+  const { name, email, password } = req.body;
+
   try {
-    const { name, email, password } = req.body;
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(400).json({ error: 'Email sudah terdaftar' });
 
-    // Cek email sudah terdaftar
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ error: 'Email sudah digunakan' });
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({ name, email, password: hashedPassword });
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = new User({ name, email, password: hashed });
     await newUser.save();
 
-    res.status(201).json({ message: 'Registrasi berhasil' });
+    res.status(201).json({ message: 'Berhasil register' });
   } catch (err) {
-    res.status(500).json({ error: 'Gagal registrasi' });
+    res.status(500).json({ error: 'Server error saat register' });
   }
 });
 
-// LOGIN
+// Login
 router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
-
-    // Cek user
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ error: 'Email tidak ditemukan' });
+    if (!user) return res.status(401).json({ error: 'Email tidak ditemukan' });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ error: 'Password salah' });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ error: 'Password salah' });
 
-    // Buat token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1d'
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
     });
-
-    res.json({ token });
   } catch (err) {
-    res.status(500).json({ error: 'Gagal login' });
+    res.status(500).json({ error: 'Server error saat login' });
   }
 });
 

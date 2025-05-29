@@ -1,18 +1,17 @@
-const express = require("express");
-const cors = require("cors");
-const authRoutes = require("./routes/auth");
-const newsRoutes = require("./routes/newsRoutes");
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-app.use("/api/auth", authRoutes);
-app.use("/api/news", newsRoutes);
-
-app.get("/", (req, res) => {
-  res.send("Server is running...");
-});
+// server.js
+const mongoose = require('mongoose');
+const app = require('./app');
+require('dotenv').config();
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const mongoURI = process.env.MONGO_URI;
+
+mongoose.set('bufferCommands', false); // opsional
+mongoose.connect(mongoURI, {
+  serverSelectionTimeoutMS: 30000
+}).then(() => {
+  console.log("✅ MongoDB connected");
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}).catch((err) => {
+  console.error("❌ Error connecting to MongoDB:", err);
+});

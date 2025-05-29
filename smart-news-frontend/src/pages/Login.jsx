@@ -7,16 +7,33 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
 
-    // Dummy login check
-    if (email === 'admin@test.com' && password === '123456') {
-      localStorage.setItem('token', 'fake-token-123');
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Login gagal');
+
+      // Simpan token & data user ke localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      alert('Login berhasil!');
       navigate('/home');
-    } else {
-      setError('Email atau password salah');
+    } catch (err) {
+      setError(err.message);
     }
+
   };
 
   return (
