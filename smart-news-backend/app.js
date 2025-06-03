@@ -16,11 +16,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const newsRoutes = require('./routes/newsRoutes');
 const authRoutes = require('./routes/authRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const UserRoutes = require('./routes/UserRoutes');
 
 
 app.use('/api/news', newsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/users', UserRoutes);
 
 
 module.exports = app;

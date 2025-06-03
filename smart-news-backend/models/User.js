@@ -20,6 +20,24 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
+  },
+  bio: {
+    type: String,
+    trim: true,
+    maxlength: 500,
+    default: ''
+  },
+  profilePictureUrl: {
+    type: String,
+    default: null
+  },
+  website: {
+    type: String,
+    trim: true
+  },
+  socialMedia: {
+    instagram: String,
+    linkedin: String
   }
 }, { timestamps: true });
 
