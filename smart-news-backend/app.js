@@ -24,5 +24,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/users', UserRoutes);
 
+app.get('/', (req, res) => {
+  res.send('✅ Smart News Hub API is running');
+});
+
 
 module.exports = app;
