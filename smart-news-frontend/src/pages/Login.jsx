@@ -1,3 +1,4 @@
+// Login.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,12 +8,27 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Dapatkan URL API dari environment variable
+  // Pastikan Anda telah mengatur VITE_API_URL di Vercel dengan nilai URL Railway Anda
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+  // Optional: Tambahkan log untuk debugging saat development
+  // console.log("API Base URL:", API_BASE_URL);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
 
+    // Validasi jika API_BASE_URL belum diatur
+    if (!API_BASE_URL) {
+      setError('Kesalahan konfigurasi: URL API backend tidak ditemukan.');
+      console.error("VITE_API_URL is not defined in environment variables!");
+      return;
+    }
+
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      // Gunakan API_BASE_URL dari environment variable
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,7 +49,6 @@ const Login = () => {
     } catch (err) {
       setError(err.message);
     }
-
   };
 
   return (
