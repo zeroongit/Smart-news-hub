@@ -1,0 +1,24 @@
+
+{
+  "installCommand": "npm install --prefix smart-news-frontend && npm install --prefix smart-news-backend",
+  "buildCommand": "npm run build --prefix smart-news-frontend",
+
+  "functions": {
+    "smart-news-backend/api/index.js": {
+      "runtime": "@vercel/node@20.0.0", 
+      "memory": 3000, 
+      "maxDuration": 10 
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/smart-news-backend/api" 
+    },
+    {
+      "src": "/(.*)", 
+      "dest": "/smart-news-frontend/$1" 
+    }
+  ],
+  "outputDirectory": "smart-news-frontend/dist" 
+}
