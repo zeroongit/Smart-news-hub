@@ -3,7 +3,7 @@
 const config = {
   // GANTI DENGAN URL BACKEND ANDA YANG DI-DEPLOY DI RENDER
   API_BASE_URL: process.env.NODE_ENV === 'production'
-    ? 'smart-news-hub-production.up.railway.app' 
+    ? 'https://smart-news-hub.vercel.app' 
     : 'http://localhost:5000',
 };
 
