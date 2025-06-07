@@ -4,7 +4,7 @@
   "buildCommand": "npm run build --prefix smart-news-frontend",
 
   "functions": {
-    "smart-news-backend/api/index.js": {
+    "smart-news-backend/api/app.js": {
       "memory": 3000, 
       "maxDuration": 10 
     }
