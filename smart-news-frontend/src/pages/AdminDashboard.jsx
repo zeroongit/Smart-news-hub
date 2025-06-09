@@ -13,7 +13,7 @@ const AdminDashboard = () => {
 
   const fetchNews = () => {
     const token = localStorage.getItem('token');
-    fetch('http://localhost:5000/api/news/admin/all', {
+    fetch('smart-news-backend.vercel.app/api/news/admin/all', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
 
   const handleApprove = (id) => {
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:5000/api/news/approve/${id}`, {
+    fetch(`smart-news-backend.vercel.app/api/news/approve/${id}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -31,7 +31,7 @@ const AdminDashboard = () => {
 
   const handleReject = (id) => {
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:5000/api/news/reject/${id}`, {
+    fetch(`smart-news-backend.vercel.app/api/news/reject/${id}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
 
   const handleDelete = (id) => {
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:5000/api/news/admin/delete/${id}`, {
+    fetch(`smart-news-backend.vercel.app/api/news/admin/delete/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     })
