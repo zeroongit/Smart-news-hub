@@ -10,7 +10,7 @@ const app = express();
 
 // --- Konfigurasi CORS (PENTING untuk Vercel) ---
 const corsOptions = {
-  origin: smart-news-hub.vercel.app || 'http://localhost:5173', // Default ke localhost untuk development
+  origin: ['https://smart-news-hub.vercel.app', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Izinkan semua metode yang digunakan API Anda
   credentials: true, // Penting jika Anda menggunakan cookie atau mengirim header Authorization
   optionsSuccessStatus: 204 // Untuk preflight requests
@@ -18,18 +18,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- CATATAN: PENANGANAN UPLOADS ---
-// Jika Anda sebelumnya memiliki app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// Ini tidak akan berfungsi di Vercel Serverless Functions.
-// Anda perlu menggunakan layanan penyimpanan cloud (seperti Vercel Blob, AWS S3, dll.)
-// untuk menyimpan dan melayani file unggahan di lingkungan produksi.
-// Untuk saat ini, baris tersebut dihapus.
-
-// --- Koneksi MongoDB ---
 const MONGO_URI = process.env.MONGO_URI;
 
-// Pastikan koneksi Mongoose hanya terhubung sekali
-// Pola ini umum untuk serverless functions agar koneksi tetap hidup
 let isConnected = false;
 async function connectDb() {
   if (isConnected) {
@@ -46,25 +36,21 @@ async function connectDb() {
   }
 }
 
-// Impor Rute Anda
-// Pastikan file-file ini ada di direktori yang benar relatif terhadap api/index.js
+
 const newsRoutes = require('../routes/newsRoutes');
 const authRoutes = require('../routes/authRoutes');
-const uploadRoutes = require('../routes/uploadRoutes'); // Sesuaikan jika Anda akan menangani upload di sini
+const uploadRoutes = require('../routes/uploadRoutes'); 
 const UserRoutes = require('../routes/UserRoutes');
 
 
-// Gunakan Rute API Anda
-// Pastikan prefix '/api' sudah ditambahkan di app.js di Vercel config.json
-// Contoh jika Anda punya vercel.json dengan rewrite "/api/(.*)" -> "/api"
 app.use('/api/news', newsRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/upload', uploadRoutes); // Jika Anda memiliki rute upload, pastikan logikanya disesuaikan
+app.use('/api/upload', uploadRoutes); 
 app.use('/api/users', UserRoutes);
 
 // Rute dasar untuk pengujian
 app.get('/api', async (req, res) => {
-  await connectDb(); // Coba koneksi ke DB saat ada request
+  await connectDb(); 
   res.send('✅ Smart News Hub API (Serverless) is running');
 });
 

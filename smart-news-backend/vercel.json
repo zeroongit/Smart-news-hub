@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "smart-news-backend/api/app.js"
+      "dest": "smart-news-backend/api/index.js"
     }
   ]
 }
