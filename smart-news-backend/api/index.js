@@ -1,10 +1,18 @@
-// smart-news-backend/api/index.js (File baru ini)
+
 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-// const path = require('path'); // Tidak diperlukan jika tidak melayani file statis lokal
-require('dotenv').config(); // Untuk memuat MONGODB_URI dari .env
+
+require('dotenv').config(); 
+
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const app = express();
 
@@ -48,15 +56,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes); 
 app.use('/api/users', UserRoutes);
 
-// Rute dasar untuk pengujian
+
 app.get('/api', async (req, res) => {
   await connectDb(); 
   res.send('✅ Smart News Hub API (Serverless) is running');
 });
 
-// Jalankan koneksi DB saat aplikasi diinisialisasi
-// Ini akan berjalan setiap cold start
+
 connectDb();
 
-// Ekspor aplikasi Express sebagai Serverless Function
+
 module.exports = app;
