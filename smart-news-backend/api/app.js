@@ -10,9 +10,6 @@ const app = express();
 
 // --- Konfigurasi CORS (PENTING untuk Vercel) ---
 const corsOptions = {
-  // GANTI DENGAN URL FRONTEND VERCEL ANDA
-  // Misalnya: 'https://nama-project-frontend-anda.vercel.app'
-  // Atau Anda bisa menggunakan process.env.FRONTEND_URL jika Anda mengaturnya di Vercel
   origin: smart-news-hub.vercel.app || 'http://localhost:5173', // Default ke localhost untuk development
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], // Izinkan semua metode yang digunakan API Anda
   credentials: true, // Penting jika Anda menggunakan cookie atau mengirim header Authorization
