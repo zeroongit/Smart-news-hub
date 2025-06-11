@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
-import config from '../src/config'; // Pastikan file config.js ada
 
 const Profile = () => {
     // State untuk field profil
@@ -39,7 +38,7 @@ const Profile = () => {
         }
 
         try {
-            const res = await fetch(`${config.API_BASE_URL}/api/users/profile`, {
+            const res = await fetch(`smart-news-backend.vercel.app/api/api/users/profile`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -110,7 +109,7 @@ const Profile = () => {
         }
 
         try {
-            const res = await fetch(`${config.API_BASE_URL}/api/users/profile`, {
+            const res = await fetch(`smart-news-backend.vercel.app/api/users/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -158,7 +157,7 @@ const Profile = () => {
             }
 
             try {
-                const res = await fetch(`${config.API_BASE_URL}/api/users/profile`, {
+                const res = await fetch(`smart-news-backend.vercel.app/api/api/users/profile`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
