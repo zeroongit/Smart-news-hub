@@ -12,7 +12,7 @@ const NewsEdit = () => {
     useEffect(() => {
         const fetchArticle = async () => {
             try {
-                const res = await fetch(`http://localhost:5000/api/news/${id}`);
+                const res = await fetch(`smart-news-backend.vercel.app/api/news/${id}`);
                 const data = await res.json();
                 setTilte(data.title);
                 setContent(data.content);

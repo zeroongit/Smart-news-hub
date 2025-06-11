@@ -8,7 +8,7 @@ const NewsDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/news/${id}`)
+    fetch(`smart-news-backend.vercel.app/api/news/${id}`)
       .then(res => res.json())
       .then(data => {
         setArticle(data);

@@ -9,7 +9,7 @@ const NewsList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/news')
+    fetch('smart-news-backend.vercel.app/api/news')
       .then(res => res.json())
       .then(data => {
         setNews(data);

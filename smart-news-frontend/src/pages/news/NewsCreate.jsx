@@ -15,7 +15,7 @@ const NewsCreate = () => {
         formData.append('image', image);
 
         try {
-            const res =await fetch("http://localhost:5000/api/upload", {
+            const res =await fetch("smart-news-backend.vercel.app/api/upload", {
                 method: 'POST',
                 body: formData,
             });
@@ -43,7 +43,7 @@ const NewsCreate = () => {
         };
 
         try {
-            const res = await fetch('http://localhost:5000/api/news', {
+            const res = await fetch('smart-news-backend.vercel.app/api/news', {
                 method: 'POST',
                 header: {
                     'content-type': 'application/json'
