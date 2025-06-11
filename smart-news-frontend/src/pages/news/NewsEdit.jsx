@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage } from '../services/api'; 
+import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage } from '../../services/api'; 
 
 function NewsEdit() {
   const { id, categoryName } = useParams(); 
