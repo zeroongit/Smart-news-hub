@@ -5,7 +5,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
-import NewsList from './pages/news/NewsList';
 import NewsDetails from './pages/news/NewsDetails';
 import NewsCreate from './pages/news/NewsCreate';
 import Profile from './pages/Profile';
