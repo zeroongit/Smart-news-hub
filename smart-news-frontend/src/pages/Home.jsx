@@ -1,52 +1,124 @@
-
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { getPublicNews, showMessage } from '../services/api';
 import NewsCard from '../components/NewsCard';
+import { Link, useParams } from 'react-router-dom'; 
+import Navbar from '../components/Navbar';
 
-const Home = () => {
+function Home() {
+  const { categoryName } = useParams(); 
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(categoryName || ''); 
+
+  const categories = ['Politik', 'Ekonomi', 'Olahraga', 'Teknologi', 'Hiburan', 'Lainnya'];
+
+  useEffect(() => {
+    setSelectedCategory(categoryName || ''); 
+  }, [categoryName]);
 
   useEffect(() => {
     const fetchNews = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const data = await getPublicNews(); 
+        const params = {};
+        if (searchQuery) {
+          params.search = searchQuery;
+        }
+        if (selectedCategory) { 
+          params.category = selectedCategory;
+        }
+
+        const data = await getPublicNews(params);
         setNews(data);
       } catch (err) {
         setError(err.message || 'Gagal memuat berita.');
-        showMessage(err.message || 'Terjadi kesalahan saat memuat berita.', 'error'); 
-        console.error("Error fetching public news for Home:", err);
+        showMessage(err.message || 'Terjadi kesalahan saat memuat berita.', 'error');
+        console.error("Failed to fetch news:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchNews();
-  }, []);
+    const handler = setTimeout(() => {
+      fetchNews();
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery, selectedCategory]); 
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl font-semibold">Memuat berita...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-red-500 text-xl">Error: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <>
       <Navbar />
-      <main className="bg-gray-100 min-h-screen p-6">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Berita Terbaru</h2>
-        {loading ? (
-          <p className="text-gray-600">Memuat berita...</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold text-center mb-6">Smart News Hub</h1>
+
+        <div className="mb-6 flex flex-col md:flex-row items-center justify-center gap-4">
+          <input
+            type="text"
+            placeholder="Cari berita..."
+            className="p-2 border border-gray-300 rounded-md w-full md:w-1/2"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          <select
+            className="p-2 border border-gray-300 rounded-md w-full md:w-auto"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+            <option value="">Semua Kategori</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <h2 className="text-2xl font-semibold mb-4">Berita Terbaru & Populer</h2>
+        {news.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {news.map((item) => (
-              <NewsCard
-                key={item._id}
-                item={item}
-                onClick={() => navigate(`/news/${item._id}`)}
-              />
+              <NewsCard key={item._id} news={item} />
             ))}
           </div>
+        ) : (
+          <p className="text-center text-lg text-gray-700">Tidak ada berita yang ditemukan dengan kriteria tersebut.</p>
         )}
-      </main>
+
+        <div className="text-center mt-8">
+          <p className="text-lg">
+            <Link to="/login" className="text-blue-500 hover:underline">
+              Login
+            </Link>
+            <Link to="/register" className="text-blue-500 hover:underline">
+              Daftar
+            </Link>
+          </p>
+        </div>
+      </div>
     </>
   );
-};
+}
 
 export default Home;

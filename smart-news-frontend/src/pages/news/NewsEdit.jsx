@@ -1,80 +1,171 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom"
-import Navbar from "../../components/Navbar";
+// smart-news-frontend/src/pages/news/NewsEdit.jsx
 
-const NewsEdit = () => {
-    const {id} = useParams();
-    const Navigate = useNavigate();
-    const [title, setTilte ] = useState('');
-    const [content, setContent] = useState('');
-    const [image, setImage] = useState('');
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getNewsDetails, updateNews, uploadImage, showMessage } from '../../services/api'; 
 
-    useEffect(() => {
-        const fetchArticle = async () => {
-            try {
-                const res = await fetch(`smart-news-backend.vercel.app/api/news/${id}`);
-                const data = await res.json();
-                setTilte(data.title);
-                setContent(data.content);
-                setImage(data.image || '');
-            } catch (err) {
-                console.error('Gagal memuat artikel:', err);
-            }
-        };
+function NewsEdit() {
+  const { id } = useParams(); // Mengambil ID berita dari URL
+  const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null); // State untuk file yang dipilih
 
-        fetchArticle();
-    }, [id]);
-
-    const handleUpdate = async (e) => {
-        e.preventDefault();
-
-        const updatedArticle = {
-            title,
-            content,
-            image
-        };
-
-        try {
-            const res = await fetch(`http://localhost:5000/api/news/${id}`, {
-                method: 'PUT',
-                headers: {'content-type': 'application/json'},
-                body: JSON.stringify(updatedArticle),
-            });
-
-            if (res.ok) {
-                alert('Artikel berhasil diperbarui!');
-                Navigate(`/news/${id}`);
-            } else {
-                alert('Gagal memperbarui artikel');
-            }
-        } catch (err) {
-            console.error('Error saat update', err)
-        }
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const data = await getNewsDetails(id);
+        setTitle(data.title);
+        setContent(data.content);
+        setImageUrl(data.imageUrl); // Set gambar yang sudah ada
+      } catch (err) {
+        setError(err.message || 'Gagal memuat berita untuk diedit.');
+        showMessage(err.message || 'Terjadi kesalahan saat memuat berita.', 'error');
+        console.error("Error fetching news for edit:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
+    if (id) {
+      fetchNews();
+    } else {
+      setError('ID Berita tidak ditemukan.');
+      showMessage('ID Berita tidak ditemukan.', 'error');
+      setLoading(false);
+    }
+  }, [id]); // Dependensi pada 'id' agar data dimuat ulang jika ID berubah
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    let newImageUrl = imageUrl; 
+
+    try {
+      // Jika ada file baru yang dipilih, unggah dulu ke Cloudinary
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        const uploadResponse = await uploadImage(formData); 
+        newImageUrl = uploadResponse.imageUrl; 
+      }
+
+      const updatedNews = { title, content, imageUrl: newImageUrl };
+      await updateNews(id, updatedNews); // 
+      
+      showMessage('Berita berhasil diperbarui!', 'success');
+      navigate('/dashboard'); // 
+    } catch (err) {
+      setError(err.message || 'Gagal memperbarui berita.');
+      showMessage(err.message || 'Gagal memperbarui berita.', 'error');
+      console.error("Error updating news:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) {
     return (
-        <>
-            <Navbar />
-            <main className="p-6 min-h-screen bg-gray-100 text-gray-800">
-                <h2 className="texr-2xl font-bold mb-6">Edit Artikel</h2>
-                <form onSubmit={handelUpdate} className="bg-white p-6 rounded shadow spacey-y-4">
-                    <div>
-                        <label className="block mb-1 text-sm">Judul Artikel</label>
-                        <input type="text" className="w-full p-2 rounded border border-gray-300" value={title} onChange={(e) => setTitle(e.target.value)} required />
-                    </div>
-                    <div>
-                        <label className="block mb-1 text-sm">Gambar (URL)</label>
-                        <input type="text" className="w-full p-2 rounded border border-gray-300" value={image} onChange={(e) => setImage(e.target.value)}></input>
-                    </div>
-                    <div>
-                        <label className="block mb-1 text-sm">Konten Artikel</label>
-                        <textarea className="w-full p-2 rounded border border-gray-300 min-h-[150px]" value={content} onChange={(e) => setContent(e.target.value)} required />
-                    </div>
-                    <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 transition-colors py-2 rounded text-white font-semibold">Simpan Perubahan</button>
-                </form>
-            </main>
-        </>
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl font-semibold">Memuat berita...</p>
+      </div>
     );
-};
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-red-500 text-xl">Error: {error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Edit Berita</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+              Judul:
+            </label>
+            <input
+              type="text"
+              id="title"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
+              Konten:
+            </label>
+            <textarea
+              id="content"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-none"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              required
+            ></textarea>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
+              Gambar:
+            </label>
+            <input
+              type="file"
+              id="image"
+              accept="image/*"
+              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+              onChange={handleFileChange}
+            />
+            {imageUrl && !selectedFile && ( 
+              <div className="mt-2">
+                <p className="text-gray-600 text-sm">Gambar saat ini:</p>
+                <img src={imageUrl} alt="Current News" className="w-24 h-24 object-cover rounded-lg mt-1" />
+              </div>
+            )}
+            {selectedFile && ( 
+                <div className="mt-2">
+                    <p className="text-gray-600 text-sm">Pratinjau gambar baru:</p>
+                    <img src={URL.createObjectURL(selectedFile)} alt="Preview" className="w-24 h-24 object-cover rounded-lg mt-1" />
+                </div>
+            )}
+          </div>
+          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
+          <div className="flex items-center justify-between">
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Memperbarui...' : 'Perbarui Berita'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="inline-block align-baseline font-bold text-sm text-gray-500 hover:text-gray-800"
+              disabled={isSubmitting}
+            >
+              Batal
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 export default NewsEdit;

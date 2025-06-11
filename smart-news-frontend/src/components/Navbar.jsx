@@ -1,79 +1,66 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { logoutUser, showMessage } from '../services/api'; 
 
-const Navbar = () => {
+function Navbar() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user'));
-  const role = user?.role;
+  const user = JSON.parse(localStorage.getItem('user')); 
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    localStorage.removeItem('name');
-    localStorage.removeItem('user');
-    navigate('/login');
+    const result = logoutUser(); 
+    if (result.success) {
+      showMessage(result.message, 'success'); // Tampilkan pesan sukses
+      navigate('/home'); // Arahkan ke halaman Home setelah logout
+    } else {
+      showMessage(result.message, 'error'); // Tampilkan pesan error
+      console.error(result.message);
+    }
   };
 
   return (
-    <nav className="bg-[#000212] text-white px-6 py-4 flex justify-between items-center shadow-md">
-      <div className="text-xl font-bold cursor-pointer" onClick={() => navigate('/home')}>
-        📰 Smart News Hub
-      </div>
-      <ul className="flex space-x-6 text-sm sm:text-base items-center">
-        <li>
-          <Link to="/home" className="hover:text-sky-400">
-            Beranda
+    <nav className="bg-gray-800 p-4 text-white">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/home" className="text-2xl font-bold">
+          Smart News Hub
+        </Link>
+        <div>
+          <Link to="/news" className="mr-4 hover:text-gray-300">
+            Berita
           </Link>
-        </li>
-        {token ? (
-          <>
-            <li>
-              <Link to="/news/create" className="hover:text-sky-400">
-                Buat Artikel
+          {user ? (
+            <>
+              <Link to="/dashboard" className="mr-4 hover:text-gray-300">
+                Dashboard
               </Link>
-            </li>
-            <li>
-              <Link to="/profile" className="hover:text-sky-400">
+              <Link to="/profile" className="mr-4 hover:text-gray-300">
                 Profil
               </Link>
-            </li>
-
-            {/* Admin Dashboard */}
-            {role === 'admin' && (
-              <li>
-                <Link to="/admin/dashboard" className="hover:text-sky-400">
+              {user.role === 'admin' && ( // Tampilkan link Admin Dashboard hanya jika role adalah admin
+                <Link to="/admin/dashboard" className="mr-4 hover:text-gray-300">
                   Admin Dashboard
                 </Link>
-              </li>
-            )}
-
-            <li>
+              )}
               <button
                 onClick={handleLogout}
-                className="hover:text-red-400 focus:outline-none"
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
               >
                 Logout
               </button>
-            </li>
-          </>
-        ) : (
-          <>
-            <li>
-              <Link to="/login" className="hover:text-sky-400">
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="mr-4 hover:text-gray-300">
                 Login
               </Link>
-            </li>
-            <li>
-              <Link to="/register" className="hover:text-sky-400">
-                Daftar
+              <Link to="/register" className="hover:text-gray-300">
+                Register
               </Link>
-            </li>
-          </>
-        )}
-      </ul>
+            </>
+          )}
+        </div>
+      </div>
     </nav>
   );
-};
+}
 
 export default Navbar;

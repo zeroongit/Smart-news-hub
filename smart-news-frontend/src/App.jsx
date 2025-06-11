@@ -22,8 +22,9 @@ function App() {
 
         {/* Public Pages */}
         <Route path="/home" element={<Home />} />
-        <Route path="/news" element={<NewsList />} />
-        <Route path="/news/:id" element={<NewsDetails />} />
+        <Route path="/news" element={<Home />} />
+        <Route path="/news/category/:categoryName" element={<Home />} /> 
+        <Route path="/news/category/:categoryName/:id" element={<NewsDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 

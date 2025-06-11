@@ -1,105 +1,131 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { getAllNewsForAdmin, deleteNews, approveNews, rejectNews, showMessage } from '../services/api'; // <--- Path Diperbaiki
+import NewsCard from '../components/NewsCard'; // Path ke components/NewsCard tetap sama
 
-const AdminDashboard = () => {
+function AdminDashboard() {
   const [news, setNews] = useState([]);
-  const [filter, setFilter] = useState('all');
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchAllNews = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getAllNewsForAdmin();
+      setNews(data);
+    } catch (err) {
+      setError(err.message || 'Gagal memuat berita admin.');
+      showMessage(err.message || 'Gagal memuat berita admin.', 'error');
+      console.error("Error fetching all news for admin:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchNews();
+    fetchAllNews();
   }, []);
 
-  const fetchNews = () => {
-    const token = localStorage.getItem('token');
-    fetch('smart-news-backend.vercel.app/api/news/admin/all', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setNews(data));
+  const handleDelete = async (id) => {
+    // Karena window.confirm tidak direkomendasikan, ini adalah placeholder.
+    // Di produksi, Anda harus membuat modal konfirmasi kustom.
+    if (window.confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
+      try {
+        await deleteNews(id);
+        showMessage('Berita berhasil dihapus!', 'success');
+        fetchAllNews();
+      } catch (err) {
+        showMessage(err.message || 'Gagal menghapus berita.', 'error');
+        console.error("Error deleting news:", err);
+      }
+    }
   };
 
-  const handleApprove = (id) => {
-    const token = localStorage.getItem('token');
-    fetch(`smart-news-backend.vercel.app/api/news/approve/${id}`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(() => fetchNews());
+  const handleApprove = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menyetujui berita ini?')) {
+      try {
+        await approveNews(id);
+        showMessage('Berita berhasil disetujui!', 'success');
+        fetchAllNews();
+      } catch (err) {
+        showMessage(err.message || 'Gagal menyetujui berita.', 'error');
+        console.error("Error approving news:", err);
+      }
+    }
   };
 
-  const handleReject = (id) => {
-    const token = localStorage.getItem('token');
-    fetch(`smart-news-backend.vercel.app/api/news/reject/${id}`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(() => fetchNews());
+  const handleReject = async (id) => {
+    if (window.confirm('Apakah Anda yakin ingin menolak berita ini?')) {
+      try {
+        await rejectNews(id);
+        showMessage('Berita berhasil ditolak!', 'success');
+        fetchAllNews();
+      } catch (err) {
+        showMessage(err.message || 'Gagal menolak berita.', 'error');
+        console.error("Error rejecting news:", err);
+      }
+    }
   };
 
-  const handleDelete = (id) => {
-    const token = localStorage.getItem('token');
-    fetch(`smart-news-backend.vercel.app/api/news/admin/delete/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(() => fetchNews());
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl font-semibold">Memuat Berita Admin...</p>
+      </div>
+    );
+  }
 
-  const filteredNews = news.filter(n => {
-    if (filter === 'approved') return n.isApproved;
-    if (filter === 'pending') return !n.isApproved && !n.isRejected;
-    if (filter === 'rejected') return n.isRejected;
-    return true;
-  });
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-red-500 text-xl">Error: {error}</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <Navbar />
-      <main className="p-6 bg-gray-100 min-h-screen">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Verifikasi Berita</h2>
-
-        <div className="mb-4 flex gap-2">
-          {['all', 'approved', 'pending', 'rejected'].map((f) => (
-            <button
-              key={f}
-              className={`px-4 py-2 rounded ${filter === f ? 'bg-sky-700 text-white' : 'bg-gray-200'}`}
-              onClick={() => setFilter(f)}
-            >
-              {f.toUpperCase()}
-            </button>
-          ))}
-        </div>
-
-        {filteredNews.map(item => (
-          <div key={item._id} className="bg-white p-4 shadow rounded mb-4">
-            <h3 className="text-xl font-semibold">{item.title}</h3>
-            <p className="text-sm text-gray-600">{item.excerpt}</p>
-            <p className="text-sm text-gray-500">
-              Status: {item.isApproved ? '✅ Disetujui' : item.isRejected ? '❌ Ditolak' : '⏳ Menunggu'}
-            </p>
-
-            <div className="mt-3 flex gap-2">
-              {!item.isApproved && !item.isRejected && (
-                <>
-                  <button onClick={() => handleApprove(item._id)} className="bg-green-600 text-white px-3 py-1 rounded">
-                    Setujui
-                  </button>
-                  <button onClick={() => handleReject(item._id)} className="bg-red-600 text-white px-3 py-1 rounded">
-                    Tolak
-                  </button>
-                </>
-              )}
-              <button onClick={() => handleDelete(item._id)} className="bg-gray-500 text-white px-3 py-1 rounded">
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold text-center mb-6">Admin Dashboard Berita</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {news.map((item) => (
+          <div key={item._id} className="border p-4 rounded-lg shadow-md bg-white">
+            <NewsCard news={item} />
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'Public' ? 'bg-green-100 text-green-800' : item.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+                Status: {item.status}
+              </span>
+              <button
+                onClick={() => handleApprove(item._id)}
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm"
+                disabled={item.status === 'Public'}
+              >
+                Setujui
+              </button>
+              <button
+                onClick={() => handleReject(item._id)}
+                className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded text-sm"
+                disabled={item.status === 'Draft'}
+              >
+                Tolak
+              </button>
+              <button
+                onClick={() => handleDelete(item._id)}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+              >
                 Hapus
+              </button>
+              <button
+                onClick={() => window.location.href = `/news/${item._id}/edit`}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm"
+              >
+                Edit
               </button>
             </div>
           </div>
         ))}
-      </main>
-    </>
+      </div>
+    </div>
   );
-};
+}
 
 export default AdminDashboard;

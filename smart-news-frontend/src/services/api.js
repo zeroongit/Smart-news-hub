@@ -1,13 +1,7 @@
-// smart-news-frontend/src/services/api.js
-
 import axios from 'axios';
 
-// Mengambil URL dasar API dari environment variable yang diatur di .env (lokal)
-// atau di Vercel Dashboard (deployment).
-// Untuk aplikasi Vite, variabel lingkungan harus diawali dengan VITE_
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Membuat instance Axios dengan konfigurasi dasar
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -15,13 +9,10 @@ const api = axios.create({
   },
 });
 
-// Interceptor untuk menambahkan token otentikasi ke setiap permintaan
-// Ini penting untuk rute yang dilindungi (protected routes)
 api.interceptors.request.use(
   (config) => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user && user.token) {
-      // Menambahkan token JWT ke header Authorization
       config.headers.Authorization = `Bearer ${user.token}`;
     }
     return config;
@@ -31,13 +22,13 @@ api.interceptors.request.use(
   }
 );
 
-// --- Fungsi-fungsi API berdasarkan Rute Backend Anda ---
+// --- Fungsi-fungsi API berdasarkan Rute Backend ---
 
 // Rute Publik (Public Routes)
-// GET /api/news
-export const getPublicNews = async () => {
+// GET /api/news 
+export const getPublicNews = async (params = {}) => { // Menambahkan parameter params
   try {
-    const response = await api.get('/news');
+    const response = await api.get('/news', { params });
     return response.data;
   } catch (error) {
     console.error('Error fetching public news:', error);
@@ -71,7 +62,6 @@ export const registerUser = async (userData) => {
 export const loginUser = async (credentials) => {
   try {
     const response = await api.post('/auth/login', credentials);
-    // Jika login berhasil, simpan token ke localStorage (sesuai implementasi Anda)
     if (response.data && response.data.token) {
       localStorage.setItem('user', JSON.stringify(response.data));
     }
@@ -79,6 +69,29 @@ export const loginUser = async (credentials) => {
   } catch (error) {
     console.error('Error logging in user:', error.response?.data || error.message);
     throw error.response?.data || error;
+  }
+};
+
+// Path: /api/news/category/:categoryName
+export const getNewsByCategory = async (categoryName) => {
+  try {
+    const response = await api.get(`/news/category/${categoryName}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news by category ${categoryName}:`, error);
+    throw error;
+  }
+};
+
+// GET berita tunggal berdasarkan ID dan kategori
+// Path: /api/news/category/:categoryName/:id
+export const getNewsDetailsByCategoryAndId = async (categoryName, id) => {
+  try {
+    const response = await api.get(`/news/category/<span class="math-inline">\{categoryName\}/</span>{id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news details for ID ${id} in category ${categoryName}:`, error);
+    throw error;
   }
 };
 
@@ -162,8 +175,6 @@ export const deleteNews = async (id) => {
 };
 
 // --- Rute Pengguna (User Routes) ---
-// Perhatikan bahwa Anda mungkin memiliki lebih banyak rute pengguna di backend Anda
-// Rute di bawah ini adalah contoh umum
 
 // GET /api/users/profile
 export const getUserProfile = async () => {
@@ -193,7 +204,7 @@ export const uploadImage = async (formData) => {
   try {
     const response = await api.post('/upload/image', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data', // Penting untuk upload file
+        'Content-Type': 'multipart/form-data',
       },
     });
     return response.data;
@@ -203,19 +214,13 @@ export const uploadImage = async (formData) => {
   }
 };
 
-/**
- * Menampilkan pesan sebagai modal sederhana.
- * Karena alert() tidak diperbolehkan, ini adalah simulasi.
- * @param {string} message - Pesan yang akan ditampilkan.
- * @param {string} type - Tipe pesan ('success', 'error', 'info'). Default 'success'.
- */
 function showMessage(message, type = 'success') {
   const messageBox = document.createElement('div');
-  let bgColor = '#4CAF50'; // Default hijau untuk sukses
+  let bgColor = '#4CAF50';
   if (type === 'error') {
-    bgColor = '#f44336'; // Merah untuk error
+    bgColor = '#f44336';
   } else if (type === 'info') {
-    bgColor = '#2196F3'; // Biru untuk info
+    bgColor = '#2196F3';
   }
 
   messageBox.style.cssText = `
@@ -248,12 +253,9 @@ function showMessage(message, type = 'success') {
   }, 3000);
 }
 
-// Tambahkan fungsi showMessage ke ekspor
 export { showMessage };
 
-
 // Fungsi Logout
-// Fungsi ini hanya membersihkan localStorage.
 export const logoutUser = () => {
   try {
     localStorage.removeItem('user');
@@ -264,8 +266,6 @@ export const logoutUser = () => {
   }
 };
 
-
-// --- Fungsi API Baru untuk AdminDashboard ---
 // GET /api/news/admin/all
 export const getAllNewsForAdmin = async () => {
   try {
@@ -276,4 +276,3 @@ export const getAllNewsForAdmin = async () => {
     throw error.response?.data || error;
   }
 };
-

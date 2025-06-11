@@ -1,8 +1,7 @@
-// smart-news-frontend/src/pages/Login.jsx
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, showMessage } from '../../services/api'; // Mengimpor fungsi loginUser dan showMessage
+import { loginUser, showMessage } from '../services/api';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -12,14 +11,14 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // Reset error
+    setError(null); // 
     try {
-      const response = await loginUser({ email, password }); // Menggunakan fungsi loginUser
-      showMessage(response.message || 'Login berhasil!', 'success'); // Menampilkan pesan sukses
-      navigate('/dashboard'); // Arahkan ke dashboard setelah login berhasil
+      const response = await loginUser({ email, password }); 
+      showMessage(response.message || 'Login berhasil!', 'success'); 
+      navigate('/dashboard'); 
     } catch (err) {
-      setError(err.message || 'Login gagal. Silakan coba lagi.'); // Menampilkan pesan error dari backend
-      showMessage(err.message || 'Login gagal. Silakan coba lagi.', 'error'); // Menampilkan pesan error
+      setError(err.message || 'Login gagal. Silakan coba lagi.'); 
+      showMessage(err.message || 'Login gagal. Silakan coba lagi.', 'error');
       console.error('Login error:', err);
     }
   };

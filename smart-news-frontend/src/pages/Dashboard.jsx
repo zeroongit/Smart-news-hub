@@ -10,7 +10,7 @@ const Dashboard = () => {
                 <h2 className='text-2xl font-bold mb-6'>Admin Dashboard</h2>
                 <div className='bg-white p-6 rounded shadow'>
                     <p className='text-lg'>Halo, <strong>{name}</strong> 👋</p>
-                    <p className='mt-2'>Selamat datang di panel admin, Di sini Anda bisa mengelola absensi, job dan artikel berita.</p>
+                    <p className='mt-2'>Selamat datang , Di sini Anda bisa mengelola artikel berita.</p>
                 </div>
             </main>
         </>

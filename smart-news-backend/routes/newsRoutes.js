@@ -2,14 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const News = require('../models/News');
-const User = require('../models/User'); // Pastikan User model diimpor
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 const isAdmin = require('../middleware/isAdmin');
 
-// Helper untuk log error (opsional, bisa diintegrasikan dengan Winston/Morgan di production)
 const logError = (err, message) => {
   console.error(`${message}:`, err.message);
-  // console.error(err.stack); // Uncomment for more detailed stack trace
 };
 
 // --- Rute untuk Pengguna Tanpa Login (Public Access) ---
@@ -18,166 +16,193 @@ const logError = (err, message) => {
 // Path: /api/news
 router.get('/', async (req, res) => {
   try {
-    // Mengambil berita dengan status 'Public'
-    const news = await News.find({ status: 'Public' })
-                           .sort({ created_at: -1 }); // Sesuaikan dengan created_at
+    const { search, category } = req.query;
+    let query = { status: 'Public' }; 
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (category) {
+      query.category = { $regex: category, $options: 'i' };
+    }
+
+    const news = await News.find(query)
+                           .sort({ created_at: -1 }); 
     res.json(news);
   } catch (err) {
-    logError(err, 'Gagal mengambil berita publik');
+    logError(err, 'Gagal mengambil berita publik dengan filter');
     res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil berita.' });
   }
 });
 
-// GET berita tunggal berdasarkan ID (publik, tapi hanya jika statusnya Public)
-// Path: /api/news/:id
-router.get('/:id', async (req, res) => {
+
+
+// GET semua berita berdasarkan kategori (publik)
+// Path: /api/news/category/:categoryName
+router.get('/category/:categoryName', async (req, res) => {
   try {
-    const news = await News.findById(req.params.id);
+    const categoryName = req.params.categoryName;
+    const news = await News.find({
+      status: 'Public',
+      category: { $regex: categoryName, $options: 'i' } // Cari kategori secara case-insensitive
+    }).sort({ created_at: -1 });
+    res.json(news);
+  } catch (err) {
+    logError(err, `Gagal mengambil berita berdasarkan kategori '${req.params.categoryName}'`);
+    res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil berita berdasarkan kategori.' });
+  }
+});
+
+// GET berita tunggal berdasarkan ID dan kategori (publik)
+// Path: /api/news/category/:categoryName/:id
+router.get('/category/:categoryName/:id', async (req, res) => {
+  try {
+    const { categoryName, id } = req.params;
+    const news = await News.findOne({
+      _id: id,
+      status: 'Public',
+      category: { $regex: categoryName, $options: 'i' } // Pastikan berita juga cocok dengan kategori
+    });
     if (!news) {
-      return res.status(404).json({ error: 'Berita tidak ditemukan.' });
-    }
-    // Jika berita belum Public, dan bukan admin yang melihat, tolak akses
-    // req.user bisa tidak ada jika user tidak login, jadi cek juga keberadaannya.
-    if (news.status !== 'Public' && (!req.user || req.user.role !== 'admin')) {
-      return res.status(403).json({ error: 'Berita ini belum dipublikasikan dan tidak dapat diakses publik.' });
+      return res.status(404).json({ error: 'Berita tidak ditemukan atau tidak dapat diakses di kategori ini.' });
     }
     res.json(news);
   } catch (err) {
-    logError(err, 'Gagal mengambil detail berita');
-    res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil detail berita.' });
+    logError(err, `Gagal mengambil berita tunggal dengan ID ${req.params.id} di kategori ${req.params.categoryName}`);
+    if (err.name === 'CastError') {
+      return res.status(400).json({ error: 'Format ID berita tidak valid.' });
+    }
+    res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil berita.' });
   }
 });
 
 
-// --- Rute untuk Pengguna Login (User Biasa & Admin) ---
-
-// POST berita baru (proteksi: hanya user yang login bisa post)
-// Path: /api/news
-// Berita yang dipost oleh user biasa akan memiliki status: 'Pending' secara default
-// Berita yang dipost oleh admin akan memiliki status: 'Public' secara default
-router.post('/', auth, async (req, res) => {
+// ... Rute otentikasi (Auth Routes) ...
+// POST /api/auth/register
+router.post('/auth/register', async (req, res) => {
   try {
-    const { judul, deskripsi, gambar, kategori } = req.body; // Sesuaikan dengan field baru
+    const { username, email, password, role } = req.body;
+    const user = new User({ username, email, password, role: role || 'user' }); // Default role 'user'
+    await user.save();
+    res.status(201).json({ message: 'Registrasi berhasil!' });
+  } catch (err) {
+    logError(err, 'Gagal registrasi pengguna');
+    res.status(400).json({ error: err.message });
+  }
+});
 
-    // Validasi input dasar
-    if (!judul || !deskripsi) {
-      return res.status(400).json({ error: 'Judul dan deskripsi berita wajib diisi.' });
+// POST /api/auth/login
+router.post('/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: 'Email atau kata sandi salah.' });
     }
 
-    const isUserAdmin = req.user.role === 'admin';
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Email atau kata sandi salah.' });
+    }
 
-    const newArticle = new News({
-      user_id: req.user.id, // Ambil user_id dari token user yang login
-      judul, // Gunakan judul
-      penulis: req.user.name, // Penulis adalah nama user yang login (dari token)
-      kategori: kategori || 'Umum', // Tambahkan kategori, default 'Umum'
-      status: isUserAdmin ? 'Public' : 'Pending', // Otomatis Public jika admin, Pending jika user biasa
-      deskripsi, // Gunakan deskripsi sebagai konten utama
-      gambar, // Gunakan gambar
-      // slug akan digenerate otomatis di model jika ada logika atau bisa ditambahkan di sini
-      // Misalnya: slug: judul.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-*|-*$/g, '')
-    });
-
-    await newArticle.save();
-    res.status(201).json({ message: 'Berita berhasil dibuat.', news: newArticle });
+    const token = user.generateAuthToken();
+    res.json({ message: 'Login berhasil!', token, role: user.role, username: user.username });
   } catch (err) {
-    logError(err, 'Gagal membuat berita');
-    res.status(500).json({ error: 'Terjadi kesalahan server saat membuat berita.' });
+    logError(err, 'Gagal login pengguna');
+    res.status(500).json({ error: 'Terjadi kesalahan server saat login.' });
   }
 });
 
-// PUT/Edit berita (proteksi: hanya user yang login bisa edit, dengan batasan)
+
+// --- Rute Terproteksi (Membutuhkan Otentikasi) ---
+
+// POST berita baru (proteksi: hanya admin)
+// Path: /api/news
+router.post('/', auth, isAdmin, async (req, res) => {
+  try {
+    const { title, content, imageUrl, category } = req.body;
+    const news = new News({
+      title,
+      content,
+      imageUrl,
+      category: category || 'Umum', // Default category
+      author: req.user._id, // Penulis adalah pengguna yang sedang login
+      status: 'Pending' // Berita baru biasanya berstatus 'Pending' untuk disetujui admin
+    });
+    await news.save();
+    res.status(201).json({ message: 'Berita berhasil dibuat dan menunggu persetujuan admin.', news });
+  } catch (err) {
+    logError(err, 'Gagal membuat berita');
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// PUT memperbarui berita (proteksi: hanya admin atau penulis)
 // Path: /api/news/:id
-// Admin bisa edit semua berita, user biasa hanya bisa edit berita mereka sendiri
 router.put('/:id', auth, async (req, res) => {
   try {
+    const { title, content, imageUrl, category } = req.body;
     const news = await News.findById(req.params.id);
+
     if (!news) {
       return res.status(404).json({ error: 'Berita tidak ditemukan.' });
     }
 
-    const isUserAdmin = req.user.role === 'admin';
-    // Gunakan user_id untuk cek kepemilikan
-    const isAuthor = news.user_id === req.user.id; 
-
-    // Logika Otorisasi untuk Mengedit Berita
-    if (!isUserAdmin) { // Jika bukan admin
-      if (!isAuthor) { // Dan bukan penulisnya
-        return res.status(403).json({ error: 'Anda tidak diizinkan mengedit berita ini (bukan penulis atau admin).' });
-      }
-      // Jika penulis, cek apakah berita sudah dipublikasikan/ditolak
-      // Asumsi: status 'Public' atau 'Draft' (jika sudah diubah admin) tidak bisa diubah user biasa
-      if (news.status === 'Public') {
-        return res.status(403).json({ error: 'Anda tidak dapat mengedit berita yang sudah dipublikasikan.' });
-      }
-      // Jika user biasa, hanya boleh mengedit konten berita, bukan status
-      const allowedUserUpdates = ['judul', 'deskripsi', 'gambar', 'kategori']; // Sesuaikan field yang boleh diubah
-      for (const key in req.body) {
-        if (!allowedUserUpdates.includes(key)) {
-          return res.status(403).json({ error: `Anda tidak diizinkan mengubah field '${key}'.` });
-        }
-      }
-      // Set status kembali ke Pending jika user biasa mengedit berita yang belum Public
-      // Ini akan membuat admin harus menyetujui ulang perubahan
-      news.status = 'Pending';
+    // Hanya admin atau penulis berita yang dapat memperbarui
+    if (req.user.role !== 'admin' && news.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Anda tidak memiliki izin untuk memperbarui berita ini.' });
     }
 
-    // Update berita dengan data dari req.body
-    // Pastikan hanya field yang ada di skema News yang diupdate
-    if (req.body.judul) news.judul = req.body.judul;
-    if (req.body.deskripsi) news.deskripsi = req.body.deskripsi;
-    if (req.body.gambar) news.gambar = req.body.gambar;
-    if (req.body.kategori) news.kategori = req.body.kategori;
-
-    // Admin bisa mengubah status, user biasa tidak boleh
-    if (isUserAdmin && req.body.status) {
-        // Hanya izinkan status yang valid dari enum: Public, Draft, Pending
-        const validStatuses = ['Public', 'Draft', 'Pending'];
-        if (validStatuses.includes(req.body.status)) {
-            news.status = req.body.status;
-        } else {
-            return res.status(400).json({ error: `Status '${req.body.status}' tidak valid.` });
-        }
-    }
-    
-    // Perbarui updated_at
+    news.title = title || news.title;
+    news.content = content || news.content;
+    news.imageUrl = imageUrl || news.imageUrl;
+    news.category = category || news.category;
     news.updated_at = Date.now();
+    news.status = 'Pending'; // Berita yang diperbarui kembali ke status pending
 
-    const updatedNews = await news.save();
-    res.json({ message: 'Berita berhasil diupdate.', news: updatedNews });
+    await news.save();
+    res.json({ message: 'Berita berhasil diperbarui dan menunggu persetujuan.', news });
   } catch (err) {
-    logError(err, 'Gagal mengupdate berita');
-    res.status(500).json({ error: 'Terjadi kesalahan server saat mengupdate berita.' });
+    logError(err, 'Gagal memperbarui berita');
+    res.status(500).json({ error: 'Terjadi kesalahan server saat memperbarui berita.' });
   }
 });
 
-
-// --- Rute Khusus Admin (Membutuhkan auth & isAdmin middleware) ---
-
-// GET semua user (proteksi: hanya admin)
-// Path: /api/news/users (Catatan: Ini akan konflik dengan /api/news/:id jika :id adalah 'users'.
-// Disarankan memindahkan rute ini ke adminRoutes.js atau userRoutes.js terpisah)
-router.get('/users', auth, isAdmin, async (req, res) => {
+// GET berita berdasarkan status (proteksi: hanya admin)
+// Path: /api/news/status/:status
+router.get('/status/:status', auth, isAdmin, async (req, res) => {
   try {
-    const users = await User.find().select('-password'); // Jangan kirim password ke klien
-    res.json(users);
+    const news = await News.find({ status: req.params.status })
+                           .sort({ created_at: -1 });
+    res.json(news);
   } catch (err) {
-    logError(err, 'Gagal mengambil daftar pengguna');
-    res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil daftar pengguna.' });
+    logError(err, `Gagal mengambil berita dengan status ${req.params.status}`);
+    res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil berita berdasarkan status.' });
   }
 });
 
-// GET semua berita (termasuk yang Draft, Pending, Public) (proteksi: hanya admin)
-// Path: /api/news/admin/all
-router.get('/admin/all', auth, isAdmin, async (req, res) => {
+// GET berita berdasarkan penulis (proteksi: otentikasi)
+// Path: /api/news/author/:authorId
+router.get('/author/:authorId', auth, async (req, res) => {
   try {
-    const allNews = await News.find().sort({ created_at: -1 }); // Sesuaikan dengan created_at
-    res.json(allNews);
+    // Pengguna hanya dapat melihat berita mereka sendiri, kecuali admin
+    if (req.user.role !== 'admin' && req.params.authorId !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Anda tidak memiliki izin untuk melihat berita pengguna lain.' });
+    }
+
+    const news = await News.find({ author: req.params.authorId })
+                           .sort({ created_at: -1 });
+    res.json(news);
   } catch (err) {
-    logError(err, 'Gagal mengambil semua berita untuk admin');
-    res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil semua berita.' });
+    logError(err, `Gagal mengambil berita berdasarkan penulis ${req.params.authorId}`);
+    res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil berita berdasarkan penulis.' });
   }
 });
+
 
 // PUT menyetujui berita (proteksi: hanya admin)
 // Path: /api/news/approve/:id
@@ -185,7 +210,7 @@ router.put('/approve/:id', auth, isAdmin, async (req, res) => {
   try {
     const updated = await News.findByIdAndUpdate(
       req.params.id,
-      { status: 'Public', updated_at: Date.now() }, // Set status ke 'Public'
+      { status: 'Public', updated_at: Date.now() },
       { new: true, runValidators: true }
     );
     if (!updated) {
@@ -229,6 +254,19 @@ router.delete('/:id', auth, isAdmin, async (req, res) => {
   } catch (err) {
     logError(err, 'Gagal menghapus berita');
     res.status(500).json({ error: 'Terjadi kesalahan server saat menghapus berita.' });
+  }
+});
+
+// GET semua berita (proteksi: hanya admin, tanpa filter status)
+// Path: /api/news/admin/all
+router.get('/admin/all', auth, isAdmin, async (req, res) => {
+  try {
+    // Mengambil semua berita tanpa filter status
+    const news = await News.find().sort({ created_at: -1 });
+    res.json(news);
+  } catch (err) {
+    logError(err, 'Gagal mengambil semua berita untuk admin');
+    res.status(500).json({ error: 'Terjadi kesalahan server saat mengambil semua berita.' });
   }
 });
 

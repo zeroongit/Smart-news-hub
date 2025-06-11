@@ -1,8 +1,6 @@
-// smart-news-frontend/src/pages/Register.jsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { registerUser, showMessage } from '../../services/api'; // Mengimpor fungsi registerUser dan showMessage
+import { registerUser, showMessage } from '../services/api';
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -13,14 +11,14 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // Reset error
+    setError(null); 
     try {
-      const response = await registerUser({ username, email, password }); // Menggunakan fungsi registerUser
-      showMessage(response.message || 'Registrasi berhasil! Silakan login.', 'success'); // Menampilkan pesan sukses
-      navigate('/login'); // Arahkan ke halaman login setelah registrasi berhasil
+      const response = await registerUser({ username, email, password }); 
+      showMessage(response.message || 'Registrasi berhasil! Silakan login.', 'success'); 
+      navigate('/login'); 
     } catch (err) {
-      setError(err.message || 'Registrasi gagal. Silakan coba lagi.'); // Menampilkan pesan error dari backend
-      showMessage(err.message || 'Registrasi gagal. Silakan coba lagi.', 'error'); // Menampilkan pesan error
+      setError(err.message || 'Registrasi gagal. Silakan coba lagi.'); 
+      showMessage(err.message || 'Registrasi gagal. Silakan coba lagi.', 'error'); 
       console.error('Registration error:', err);
     }
   };
