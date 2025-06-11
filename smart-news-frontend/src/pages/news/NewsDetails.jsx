@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getNewsDetailsByCategoryAndId, showMessage } from '../../services/api'; 
+import { getNewsDetailsByCategoryAndId, showMessage } from '../services/api'; 
 
 function NewsDetails() {
-  const { id, categoryName } = useParams(); 
+  const { id, categoryName } = useParams(); // Mengambil categoryName dan id dari URL
   const [newsItem, setNewsItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,14 +22,14 @@ function NewsDetails() {
       }
     };
 
-    if (id && categoryName) { 
+    if (id && categoryName) {
       fetchDetails();
     } else {
       setError('ID Berita atau Kategori tidak ditemukan di URL.');
       showMessage('ID Berita atau Kategori tidak ditemukan di URL.', 'error');
       setLoading(false);
     }
-  }, [id, categoryName]); 
+  }, [id, categoryName]);
 
   if (loading) {
     return (
@@ -57,20 +57,21 @@ function NewsDetails() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">{newsItem.title}</h1>
-      {newsItem.imageUrl && (
+      <h1 className="text-3xl font-bold mb-4">{newsItem.judul}</h1> 
+      {newsItem.gambar && ( 
         <img
-          src={newsItem.imageUrl}
-          alt={newsItem.title}
+          src={newsItem.gambar} 
+          alt={newsItem.judul}
           className="w-full h-auto rounded-lg mb-4 object-cover"
           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/cccccc/333333?text=Gambar+Tidak+Tersedia"; }}
         />
       )}
       <p className="text-gray-600 text-sm mb-2">
-        Oleh {newsItem.author ? newsItem.author.username : 'Anonim'} pada {new Date(newsItem.created_at).toLocaleDateString()}
+        Oleh {newsItem.penulis} pada {new Date(newsItem.created_at).toLocaleDateString()} 
+        {newsItem.kategori && ` | Kategori: ${newsItem.kategori}`} 
       </p>
       <div className="prose max-w-none mb-4">
-        <p>{newsItem.content}</p>
+        <p>{newsItem.deskripsi}</p> 
       </div>
     </div>
   );

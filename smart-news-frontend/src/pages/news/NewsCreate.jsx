@@ -1,19 +1,20 @@
-// smart-news-frontend/src/pages/news/NewsCreate.jsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createNews, uploadImage, showMessage } from '../../services/api'; 
+import { createNews, uploadImage, showMessage } from '../services/api';
 
 function NewsCreate() {
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null); 
-  const [loading, setLoading] = useState(false); 
-  const [error, setError] = useState(null); 
+  const [judul, setJudul] = useState(''); 
+  const [deskripsi, setDeskripsi] = useState(''); 
+  const [kategori, setKategori] = useState('Umum'); 
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const categories = ['Politik', 'Ekonomi', 'Olahraga', 'Teknologi', 'Hiburan', 'Lainnya'];
 
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]); 
+    setSelectedFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -28,21 +29,30 @@ function NewsCreate() {
       return;
     }
 
+    const user = JSON.parse(localStorage.getItem('user'));
+    const penulis = user ? user.username : 'Anonim'; 
+
     try {
       const formData = new FormData();
       formData.append('image', selectedFile);
       
       const uploadResponse = await uploadImage(formData);
-      const imageUrl = uploadResponse.imageUrl; 
+      const gambarUrl = uploadResponse.imageUrl; // Ambil URL gambar yang diunggah dari respons
 
-      const newsData = { title, content, imageUrl }; 
+      const newsData = { 
+        judul, 
+        deskripsi, 
+        gambar: gambarUrl, 
+        penulis, 
+        kategori 
+      }; 
       await createNews(newsData);
       
-      showMessage('Berita berhasil dibuat!', 'success'); 
+      showMessage('Berita berhasil dibuat!', 'success');
       navigate('/dashboard'); 
     } catch (err) {
       setError(err.message || 'Gagal membuat berita. Silakan coba lagi.');
-      showMessage(err.message || 'Gagal membuat berita. Silakan coba lagi.', 'error'); 
+      showMessage(err.message || 'Gagal membuat berita. Silakan coba lagi.', 'error');
       console.error('Error creating news:', err);
     } finally {
       setLoading(false);
@@ -55,38 +65,54 @@ function NewsCreate() {
         <h2 className="text-2xl font-bold text-center mb-6">Buat Berita Baru</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="judul">
               Judul:
             </label>
             <input
               type="text"
-              id="title"
+              id="judul"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={judul}
+              onChange={(e) => setJudul(e.target.value)}
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
-              Konten:
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="deskripsi">
+              Deskripsi:
             </label>
             <textarea
-              id="content"
+              id="deskripsi"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-none"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={deskripsi}
+              onChange={(e) => setDeskripsi(e.target.value)}
               required
             ></textarea>
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="kategori">
+              Kategori:
+            </label>
+            <select
+              id="kategori"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={kategori}
+              onChange={(e) => setKategori(e.target.value)}
+              required
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="gambar">
               Gambar:
             </label>
             <input
               type="file"
-              id="image"
-              accept="image/*" 
+              id="gambar" 
+              accept="image/*"
               className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
               onChange={handleFileChange}
               required
@@ -103,7 +129,7 @@ function NewsCreate() {
             <button
               type="submit"
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              disabled={loading} // Nonaktifkan tombol saat loading
+              disabled={loading}
             >
               {loading ? 'Membuat...' : 'Buat Berita'}
             </button>

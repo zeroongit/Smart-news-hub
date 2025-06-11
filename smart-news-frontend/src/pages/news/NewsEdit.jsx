@@ -1,27 +1,29 @@
-// smart-news-frontend/src/pages/news/NewsEdit.jsx
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNewsDetails, updateNews, uploadImage, showMessage } from '../../services/api'; 
+import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage } from '../services/api'; 
 
 function NewsEdit() {
-  const { id } = useParams(); // Mengambil ID berita dari URL
+  const { id, categoryName } = useParams(); 
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [judul, setJudul] = useState('');
+  const [deskripsi, setDeskripsi] = useState(''); 
+  const [kategori, setKategori] = useState('Umum');
+  const [gambarUrl, setGambarUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null); // State untuk file yang dipilih
+  const [selectedFile, setSelectedFile] = useState(null); 
+
+  const categories = ['Politik', 'Ekonomi', 'Olahraga', 'Teknologi', 'Hiburan', 'Lainnya'];
 
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const data = await getNewsDetails(id);
-        setTitle(data.title);
-        setContent(data.content);
-        setImageUrl(data.imageUrl); // Set gambar yang sudah ada
+        const data = await getNewsDetailsByCategoryAndId(categoryName, id); 
+        setJudul(data.judul);
+        setDeskripsi(data.deskripsi);
+        setKategori(data.kategori);
+        setGambarUrl(data.gambar);
       } catch (err) {
         setError(err.message || 'Gagal memuat berita untuk diedit.');
         showMessage(err.message || 'Terjadi kesalahan saat memuat berita.', 'error');
@@ -31,14 +33,14 @@ function NewsEdit() {
       }
     };
 
-    if (id) {
+    if (id && categoryName) {
       fetchNews();
     } else {
-      setError('ID Berita tidak ditemukan.');
-      showMessage('ID Berita tidak ditemukan.', 'error');
+      setError('ID Berita atau Kategori tidak ditemukan.');
+      showMessage('ID Berita atau Kategori tidak ditemukan.', 'error');
       setLoading(false);
     }
-  }, [id]); // Dependensi pada 'id' agar data dimuat ulang jika ID berubah
+  }, [id, categoryName]);
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -49,22 +51,26 @@ function NewsEdit() {
     setIsSubmitting(true);
     setError(null);
 
-    let newImageUrl = imageUrl; 
+    let newGambarUrl = gambarUrl; 
 
     try {
-      // Jika ada file baru yang dipilih, unggah dulu ke Cloudinary
       if (selectedFile) {
         const formData = new FormData();
         formData.append('image', selectedFile);
-        const uploadResponse = await uploadImage(formData); 
-        newImageUrl = uploadResponse.imageUrl; 
+        const uploadResponse = await uploadImage(formData);
+        newGambarUrl = uploadResponse.imageUrl; 
       }
 
-      const updatedNews = { title, content, imageUrl: newImageUrl };
-      await updateNews(id, updatedNews); // 
+      const updatedNews = { 
+        judul, 
+        deskripsi, 
+        kategori, 
+        gambar: newGambarUrl 
+      };
+      await updateNews(id, updatedNews); 
       
       showMessage('Berita berhasil diperbarui!', 'success');
-      navigate('/dashboard'); // 
+      navigate('/dashboard'); 
     } catch (err) {
       setError(err.message || 'Gagal memperbarui berita.');
       showMessage(err.message || 'Gagal memperbarui berita.', 'error');
@@ -96,45 +102,61 @@ function NewsEdit() {
         <h2 className="text-2xl font-bold text-center mb-6">Edit Berita</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="judul">
               Judul:
             </label>
             <input
               type="text"
-              id="title"
+              id="judul"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={judul}
+              onChange={(e) => setJudul(e.target.value)}
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
-              Konten:
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="deskripsi">
+              Deskripsi:
             </label>
             <textarea
-              id="content"
+              id="deskripsi"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-none"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={deskripsi}
+              onChange={(e) => setDeskripsi(e.target.value)}
               required
             ></textarea>
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="kategori">
+              Kategori:
+            </label>
+            <select
+              id="kategori"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={kategori}
+              onChange={(e) => setKategori(e.target.value)}
+              required
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="gambar">
               Gambar:
             </label>
             <input
               type="file"
-              id="image"
+              id="gambar"
               accept="image/*"
               className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
               onChange={handleFileChange}
             />
-            {imageUrl && !selectedFile && ( 
+            {gambarUrl && !selectedFile && ( 
               <div className="mt-2">
                 <p className="text-gray-600 text-sm">Gambar saat ini:</p>
-                <img src={imageUrl} alt="Current News" className="w-24 h-24 object-cover rounded-lg mt-1" />
+                <img src={gambarUrl} alt="Current News" className="w-24 h-24 object-cover rounded-lg mt-1" />
               </div>
             )}
             {selectedFile && ( 
