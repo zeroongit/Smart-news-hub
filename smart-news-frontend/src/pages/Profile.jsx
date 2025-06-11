@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserProfile, updateUserProfile, showMessage } from '../../services/api';
+import { getUserProfile, updateUserProfile, showMessage } from '../services/api';
 
 
 function Profile() {
