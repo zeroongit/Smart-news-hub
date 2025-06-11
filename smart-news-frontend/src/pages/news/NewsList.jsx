@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import NewsCard from '../../components/NewsCard';
+import { getPublicNews, showMessage } from '../../services/api';
 
 const NewsList = () => {
   const [news, setNews] = useState([]);
@@ -9,17 +10,29 @@ const NewsList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('smart-news-backend.vercel.app/api/news')
-      .then(res => res.json())
-      .then(data => {
+    const fetchNews = async () => {
+      try {
+        const data = await getPublicNews(); 
         setNews(data);
+      } catch (err) {
+        setError(err.message || 'Gagal memuat berita.');
+        showMessage(err.message || 'Terjadi kesalahan saat memuat berita.', 'error'); 
+        console.error("Failed to fetch news:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error('Gagal memuat berita:', err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchNews();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl font-semibold">Memuat berita...</p>
+      </div>
+    );
+  }
 
   return (
     <>

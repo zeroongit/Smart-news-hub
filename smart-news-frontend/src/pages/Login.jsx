@@ -1,100 +1,80 @@
-// Login.jsx
+// smart-news-frontend/src/pages/Login.jsx
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loginUser, showMessage } from '../../services/api'; // Mengimpor fungsi loginUser dan showMessage
 
-const Login = () => {
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Dapatkan URL API dari environment variable
-  // Pastikan Anda telah mengatur VITE_API_URL di Vercel dengan nilai URL Railway Anda
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-  // Optional: Tambahkan log untuk debugging saat development
-  // console.log("API Base URL:", API_BASE_URL);
-
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    // Validasi jika API_BASE_URL belum diatur
-    if (!API_BASE_URL) {
-      setError('Kesalahan konfigurasi: URL API backend tidak ditemukan.');
-      console.error("VITE_API_URL is not defined in environment variables!");
-      return;
-    }
-
+    setError(null); // Reset error
     try {
-      // Gunakan API_BASE_URL dari environment variable
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || 'Login gagal');
-
-      // Simpan token & data user ke localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      alert('Login berhasil!');
-      navigate('/home');
+      const response = await loginUser({ email, password }); // Menggunakan fungsi loginUser
+      showMessage(response.message || 'Login berhasil!', 'success'); // Menampilkan pesan sukses
+      navigate('/dashboard'); // Arahkan ke dashboard setelah login berhasil
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Login gagal. Silakan coba lagi.'); // Menampilkan pesan error dari backend
+      showMessage(err.message || 'Login gagal. Silakan coba lagi.', 'error'); // Menampilkan pesan error
+      console.error('Login error:', err);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0e0e0e] text-white">
-      <div className="bg-[#161616] p-8 rounded-md shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login ke Portal</h2>
-
-        {error && (
-          <div className="bg-red-500 text-white text-sm p-2 rounded mb-4 text-center">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block mb-1 text-sm">Email</label>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+              Email:
+            </label>
             <input
               type="email"
-              className="w-full p-2 rounded bg-[#1f1f1f] border border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              id="email"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@test.com"
               required
             />
           </div>
-          <div>
-            <label className="block mb-1 text-sm">Password</label>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+              Kata Sandi:
+            </label>
             <input
               type="password"
-              className="w-full p-2 rounded bg-[#1f1f1f] border border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              id="password"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••"
               required
             />
           </div>
-          <button
-            type="submit"
-            className="w-full bg-sky-600 hover:bg-sky-700 transition-colors py-2 rounded text-white font-semibold"
-          >
-            Login
-          </button>
+          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
+          <div className="flex items-center justify-between">
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+            >
+              Daftar Akun
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
-};
+}
 
 export default Login;

@@ -10,20 +10,20 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('smart-news-backend.vercel.app/api/news')
-      .then((res) => {
-        if (!res.ok) throw new Error('Gagal ambil data');
-        return res.json();
-      })
-      .then((data) => {
-        console.log('Data dari backend:', data); // Debug
+    const fetchNews = async () => {
+      try {
+        const data = await getPublicNews(); 
         setNews(data);
+      } catch (err) {
+        setError(err.message || 'Gagal memuat berita.');
+        showMessage(err.message || 'Terjadi kesalahan saat memuat berita.', 'error'); 
+        console.error("Error fetching public news for Home:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Gagal memuat berita:', err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchNews();
   }, []);
 
   return (

@@ -4,24 +4,56 @@ import Navbar from '../../components/Navbar';
 
 const NewsDetails = () => {
   const { id } = useParams();
-  const [article, setArticle] = useState(null);
+  const [newsItem, setNewsItem] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`smart-news-backend.vercel.app/api/news/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        setArticle(data);
+    const fetchDetails = async () => {
+      try {
+        const data = await getNewsDetails(id); 
+        setNewsItem(data);
+      } catch (err) {
+        setError(err.message || 'Gagal memuat detail berita.');
+        showMessage(err.message || 'Terjadi kesalahan saat memuat detail berita.', 'error'); 
+        console.error(`Error fetching news details for ID ${id}:`, err);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error('Gagal mengambil detail:', err);
-        setLoading(false);
-      });
+      }
+    };
+
+    if (id) { 
+      fetchDetails();
+    } else {
+      setError('ID Berita tidak ditemukan.');
+      showMessage('ID Berita tidak ditemukan.', 'error');
+      setLoading(false);
+    }
   }, [id]);
 
-  if (loading) return <p className="p-6 text-gray-700">Memuat artikel...</p>;
-  if (!article) return <p className="p-6 text-red-500">Artikel tidak ditemukan.</p>;
+  
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl font-semibold">Memuat detail berita...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-red-500 text-xl">Error: {error}</p>
+      </div>
+    );
+  }
+
+  if (!newsItem) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-lg text-gray-700">Berita tidak ditemukan.</p>
+      </div>
+    );
+  }
 
   return (
     <>

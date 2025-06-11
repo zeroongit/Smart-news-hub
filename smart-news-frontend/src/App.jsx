@@ -8,8 +8,6 @@ import Dashboard from './pages/Dashboard';
 import NewsList from './pages/news/NewsList';
 import NewsDetails from './pages/news/NewsDetails';
 import NewsCreate from './pages/news/NewsCreate';
-import Absensi from './pages/Absensi';
-import Job from './pages/Job';
 import Profile from './pages/Profile';
 import NewsEdit from './pages/news/NewsEdit';
 import PrivateRoute from './components/PrivateRoute';
@@ -55,28 +53,12 @@ function App() {
           }
         />
         <Route
-          path="/absensi"
-          element={
-            <PrivateRoute>
-              <Absensi />
-            </PrivateRoute>
-          }
-        />
-        <Route
         path='/news/:id/edit'
         element={
           <PrivateRoute>
             <NewsEdit />
           </PrivateRoute>
         }
-        />
-        <Route
-          path="/job"
-          element={
-            <PrivateRoute>
-              <Job />
-            </PrivateRoute>
-          }
         />
         <Route
         path='/admin/dashboard'

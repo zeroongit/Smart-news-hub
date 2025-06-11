@@ -1,75 +1,94 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// smart-news-frontend/src/pages/Register.jsx
 
-const Register = () => {
-  const navigate = useNavigate();
-  const [name, setName] = useState('');
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { registerUser, showMessage } from '../../services/api'; // Mengimpor fungsi registerUser dan showMessage
+
+function Register() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Simpan data
-    localStorage.setItem('name', name);
-    localStorage.setItem('email', email);
-    localStorage.setItem('token', 'fake-token-123');
-    localStorage.setItem('role', 'user'); // default role aman
-
-    navigate('/home');
+    setError(null); // Reset error
+    try {
+      const response = await registerUser({ username, email, password }); // Menggunakan fungsi registerUser
+      showMessage(response.message || 'Registrasi berhasil! Silakan login.', 'success'); // Menampilkan pesan sukses
+      navigate('/login'); // Arahkan ke halaman login setelah registrasi berhasil
+    } catch (err) {
+      setError(err.message || 'Registrasi gagal. Silakan coba lagi.'); // Menampilkan pesan error dari backend
+      showMessage(err.message || 'Registrasi gagal. Silakan coba lagi.', 'error'); // Menampilkan pesan error
+      console.error('Registration error:', err);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0e0e0e] text-white">
-      <div className="bg-[#161616] p-8 rounded-md shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Daftar Akun</h2>
-
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="block mb-1 text-sm">Nama</label>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Daftar Akun Baru</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+              Username:
+            </label>
             <input
               type="text"
-              className="w-full p-2 rounded bg-[#1f1f1f] border border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Nama Lengkap"
+              id="username"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
-          <div>
-            <label className="block mb-1 text-sm">Email</label>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+              Email:
+            </label>
             <input
               type="email"
-              className="w-full p-2 rounded bg-[#1f1f1f] border border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              id="email"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@example.com"
               required
             />
           </div>
-          <div>
-            <label className="block mb-1 text-sm">Password</label>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+              Kata Sandi:
+            </label>
             <input
               type="password"
-              className="w-full p-2 rounded bg-[#1f1f1f] border border-gray-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              id="password"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••"
               required
             />
           </div>
-          <div>
+          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
+          <div className="flex items-center justify-between">
             <button
               type="submit"
-              className="w-full bg-sky-600 hover:bg-sky-700 transition-colors py-2 rounded text-white font-semibold"
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
               Daftar
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+            >
+              Sudah Punya Akun? Login
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-};
+}
 
 export default Register;
