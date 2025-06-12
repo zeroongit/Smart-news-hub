@@ -36,16 +36,6 @@ export const getPublicNews = async (params = {}) => { // Menambahkan parameter p
   }
 };
 
-// GET /api/news/:id
-export const getNewsDetails = async (id) => {
-  try {
-    const response = await api.get(`/news/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching news details for ID ${id}:`, error);
-    throw error;
-  }
-};
 
 // POST /api/auth/register
 export const registerUser = async (userData) => {
