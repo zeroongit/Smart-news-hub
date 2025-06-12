@@ -53,7 +53,7 @@ function App() {
           }
         />
         <Route
-        path='/news/:id/edit'
+        path='/news/:categoryName/:id/edit'
         element={
           <PrivateRoute>
             <NewsEdit />

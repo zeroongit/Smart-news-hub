@@ -1,27 +1,9 @@
-// smart-news-frontend/src/services/api.js
-
 import axios from 'axios';
 
-// Ini harus mengambil nilai dari Vercel Environment Variable untuk deployment
-// dan dari .env lokal untuk pengembangan.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Debugging: Pastikan URL ini sudah benar di console saat deployment
-console.log("API_BASE_URL di frontend:", API_BASE_URL); 
-
-// Periksa apakah API_BASE_URL ada
-if (!API_BASE_URL) {
-  console.error("API_BASE_URL is not defined! Please check Vercel Environment Variables and .env file.");
-  // Fallback ke localhost untuk pengembangan lokal jika tidak ada URL API
-  // Ini membantu agar aplikasi tetap berjalan lokal meskipun deployment error
-  // Namun, ini tidak akan memperbaiki masalah deployment.
-  // API_BASE_URL = 'http://localhost:5000/api'; 
-}
-
-
-// Membuat instance Axios dengan konfigurasi dasar
 const api = axios.create({
-  baseURL: API_BASE_URL, // <-- Pastikan ini menunjuk ke domain backend Anda
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -40,11 +22,11 @@ api.interceptors.request.use(
   }
 );
 
-// --- Fungsi-fungsi API berdasarkan Rute Backend Anda ---
+// --- Fungsi-fungsi API berdasarkan Rute Backend ---
 
 // Rute Publik (Public Routes)
-// GET /api/news (sekarang menerima params untuk search & category)
-export const getPublicNews = async (params = {}) => {
+// GET /api/news 
+export const getPublicNews = async (params = {}) => { // Menambahkan parameter params
   try {
     const response = await api.get('/news', { params });
     return response.data;
@@ -54,38 +36,13 @@ export const getPublicNews = async (params = {}) => {
   }
 };
 
-// GET semua berita berdasarkan kategori
-// Path: /api/news/category/:categoryName
-export const getNewsByCategory = async (categoryName) => {
+// GET /api/news/:id
+export const getNewsDetails = async (id) => {
   try {
-    const response = await api.get(`/news/category/${categoryName}`);
+    const response = await api.get(`/news/${id}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching news by category ${categoryName}:`, error);
-    throw error;
-  }
-};
-
-// GET berita tunggal berdasarkan ID dan kategori
-// Path: /api/news/category/:categoryName/:id
-export const getNewsDetailsByCategoryAndId = async (categoryName, id) => {
-  try {
-    const response = await api.get(`/news/category/${categoryName}/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching news details for ID ${id} in category ${categoryName}:`, error);
-    throw error;
-  }
-};
-
-// GET semua kategori unik dari berita yang sudah dipublikasi
-// Path: /api/news/categories
-export const getUniqueCategories = async () => {
-  try {
-    const response = await api.get('/news/categories');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching unique categories:', error);
+    console.error(`Error fetching news details for ID ${id}:`, error);
     throw error;
   }
 };
@@ -112,6 +69,29 @@ export const loginUser = async (credentials) => {
   } catch (error) {
     console.error('Error logging in user:', error.response?.data || error.message);
     throw error.response?.data || error;
+  }
+};
+
+// Path: /api/news/category/:categoryName
+export const getNewsByCategory = async (categoryName) => {
+  try {
+    const response = await api.get(`/news/category/${categoryName}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news by category ${categoryName}:`, error);
+    throw error;
+  }
+};
+
+// GET berita tunggal berdasarkan ID dan kategori
+// Path: /api/news/category/:categoryName/:id
+export const getNewsDetailsByCategoryAndId = async (categoryName, id) => {
+  try {
+    const response = await api.get(`/news/category/<span class="math-inline">\{categoryName\}/</span>{id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news details for ID ${id} in category ${categoryName}:`, error);
+    throw error;
   }
 };
 
@@ -150,13 +130,13 @@ export const getNewsByStatus = async (status) => {
   }
 };
 
-// GET /api/news/user/:userId
-export const getNewsByUserId = async (userId) => {
+// GET /api/news/author/:authorId (contoh untuk Dashboard/AdminDashboard)
+export const getNewsByAuthor = async (authorId) => {
   try {
-    const response = await api.get(`/news/user/${userId}`);
+    const response = await api.get(`/news/author/${authorId}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching news by user ID ${userId}:`, error);
+    console.error(`Error fetching news by author ${authorId}:`, error);
     throw error;
   }
 };
@@ -190,18 +170,6 @@ export const deleteNews = async (id) => {
     return response.data;
   } catch (error) {
     console.error(`Error deleting news for ID ${id}:`, error.response?.data || error.message);
-    throw error.response?.data || error;
-  }
-};
-
-// GET semua berita (proteksi: hanya admin, tanpa filter status)
-// Path: /api/news/admin/all
-export const getAllNewsForAdmin = async () => {
-  try {
-    const response = await api.get('/news/admin/all');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching all news for admin:', error.response?.data || error.message);
     throw error.response?.data || error;
   }
 };
@@ -246,11 +214,6 @@ export const uploadImage = async (formData) => {
   }
 };
 
-/**
- * Menampilkan pesan sebagai modal sederhana.
- * @param {string} message - Pesan yang akan ditampilkan.
- * @param {string} type - Tipe pesan ('success', 'error', 'info'). Default 'success'.
- */
 function showMessage(message, type = 'success') {
   const messageBox = document.createElement('div');
   let bgColor = '#4CAF50';
@@ -300,5 +263,16 @@ export const logoutUser = () => {
   } catch (error) {
     console.error('Error during logout:', error);
     return { success: false, message: 'Gagal logout. Silakan coba lagi.' };
+  }
+};
+
+// GET /api/news/admin/all
+export const getAllNewsForAdmin = async () => {
+  try {
+    const response = await api.get('/news/admin/all');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all news for admin:', error.response?.data || error.message);
+    throw error.response?.data || error;
   }
 };

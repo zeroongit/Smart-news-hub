@@ -105,17 +105,6 @@ function Home() {
         ) : (
           <p className="text-center text-lg text-gray-700">Tidak ada berita yang ditemukan dengan kriteria tersebut.</p>
         )}
-
-        <div className="text-center mt-8">
-          <p className="text-lg">
-            <Link to="/login" className="text-blue-500 hover:underline">
-              Login
-            </Link>
-            <Link to="/register" className="text-blue-500 hover:underline">
-              Daftar
-            </Link>
-          </p>
-        </div>
       </div>
     </>
   );
