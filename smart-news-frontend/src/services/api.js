@@ -1,7 +1,19 @@
+// smart-news-frontend/src/services/api.js
+
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Debugging: Pastikan URL ini sudah benar di console saat deployment
+console.log("API_BASE_URL di frontend:", API_BASE_URL); 
+
+// Periksa apakah API_BASE_URL ada
+if (!API_BASE_URL) {
+  console.error("API_BASE_URL is not defined! Please check Vercel Environment Variables and .env file.");
+}
+
+
+// Membuat instance Axios dengan konfigurasi dasar
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -22,11 +34,11 @@ api.interceptors.request.use(
   }
 );
 
-// --- Fungsi-fungsi API berdasarkan Rute Backend ---
+// --- Fungsi-fungsi API berdasarkan Rute Backend Anda ---
 
 // Rute Publik (Public Routes)
-// GET /api/news 
-export const getPublicNews = async (params = {}) => { // Menambahkan parameter params
+// GET /api/news (sekarang menerima params untuk search & category)
+export const getPublicNews = async (params = {}) => {
   try {
     const response = await api.get('/news', { params });
     return response.data;
@@ -36,6 +48,43 @@ export const getPublicNews = async (params = {}) => { // Menambahkan parameter p
   }
 };
 
+// GET semua berita berdasarkan kategori
+// Path: /api/news/category/:categoryName
+export const getNewsByCategory = async (categoryName) => {
+  try {
+    const response = await api.get(`/news/category/${categoryName}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news by category ${categoryName}:`, error);
+    throw error;
+  }
+};
+
+// GET berita tunggal berdasarkan ID dan kategori
+// Path: /api/news/category/:categoryName/:id
+export const getNewsDetailsByCategoryAndId = async (categoryName, id) => {
+  try {
+    const requestUrl = `/news/category/${categoryName}/${id}`;
+    console.log(`Frontend requesting news details from: ${API_BASE_URL}${requestUrl}`); // <--- DEBUG LOG BARU
+    const response = await api.get(requestUrl);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news details for ID ${id} in category ${categoryName}:`, error);
+    throw error;
+  }
+};
+
+// GET semua kategori unik dari berita yang sudah dipublikasi
+// Path: /api/news/categories
+export const getUniqueCategories = async () => {
+  try {
+    const response = await api.get('/news/categories');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching unique categories:', error);
+    throw error;
+  }
+};
 
 // POST /api/auth/register
 export const registerUser = async (userData) => {
@@ -59,29 +108,6 @@ export const loginUser = async (credentials) => {
   } catch (error) {
     console.error('Error logging in user:', error.response?.data || error.message);
     throw error.response?.data || error;
-  }
-};
-
-// Path: /api/news/category/:categoryName
-export const getNewsByCategory = async (categoryName) => {
-  try {
-    const response = await api.get(`/news/category/${categoryName}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching news by category ${categoryName}:`, error);
-    throw error;
-  }
-};
-
-// GET berita tunggal berdasarkan ID dan kategori
-// Path: /api/news/category/:categoryName/:id
-export const getNewsDetailsByCategoryAndId = async (categoryName, id) => {
-  try {
-    const response = await api.get(`/news/category/<span class="math-inline">\{categoryName\}/</span>{id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching news details for ID ${id} in category ${categoryName}:`, error);
-    throw error;
   }
 };
 
@@ -120,13 +146,13 @@ export const getNewsByStatus = async (status) => {
   }
 };
 
-// GET /api/news/author/:authorId (contoh untuk Dashboard/AdminDashboard)
-export const getNewsByAuthor = async (authorId) => {
+// GET /api/news/user/:userId
+export const getNewsByUserId = async (userId) => {
   try {
-    const response = await api.get(`/news/author/${authorId}`);
+    const response = await api.get(`/news/user/${userId}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching news by author ${authorId}:`, error);
+    console.error(`Error fetching news by user ID ${userId}:`, error);
     throw error;
   }
 };
@@ -204,6 +230,11 @@ export const uploadImage = async (formData) => {
   }
 };
 
+/**
+ * Menampilkan pesan sebagai modal sederhana.
+ * @param {string} message - Pesan yang akan ditampilkan.
+ * @param {string} type - Tipe pesan ('success', 'error', 'info'). Default 'success'.
+ */
 function showMessage(message, type = 'success') {
   const messageBox = document.createElement('div');
   let bgColor = '#4CAF50';
@@ -256,6 +287,7 @@ export const logoutUser = () => {
   }
 };
 
+// --- Fungsi API untuk AdminDashboard ---
 // GET /api/news/admin/all
 export const getAllNewsForAdmin = async () => {
   try {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAllNewsForAdmin, deleteNews, approveNews, rejectNews, showMessage } from '../services/api'; // <--- Path Diperbaiki
-import NewsCard from '../components/NewsCard'; // Path ke components/NewsCard tetap sama
+import NewsCard from '../components/NewsCard';
 
 function AdminDashboard() {
   const [news, setNews] = useState([]);
