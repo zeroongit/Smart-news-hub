@@ -35,7 +35,7 @@ function Login() {
       // dan untuk React merender ulang sebelum navigasi
       setTimeout(() => {
         console.log('Attempting to navigate to dashboard based on role...');
-        navigate(user.role === 'admin' ? '/admindashboard' : '/dashboard'); 
+        navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard'); 
       }, 50); // Delay singkat (50ms)
 
     } catch (err) {
