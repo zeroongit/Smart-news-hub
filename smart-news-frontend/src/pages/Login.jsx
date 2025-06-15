@@ -17,20 +17,17 @@ function Login() {
       const response = await loginUser({ email, password }); 
       console.log('Login successful response from backend:', response); // Debugging: lihat respons dari backend
 
-      // Ini adalah bagian yang paling penting untuk debugging
-      if (response.token && response.username && response.role) { // Pastikan data penting ada
-        localStorage.setItem('user', JSON.stringify({
-          token: response.token,
-          username: response.username,
-          role: response.role,
-          _id: response._id // Jika _id juga dikirim dari backend
-        }));
+      const user = response.user;
+
+      if (user && user.token && user.username && user._id) {
+        localStorage.setItem('user', JSON.stringify(user));
         console.log('User data successfully saved to localStorage!');
         const storedUser = JSON.parse(localStorage.getItem('user'));
         console.log('User data retrieved immediately from localStorage:', storedUser);
       } else {
         console.warn('Login response did not contain expected token or user data:', response);
       }
+
 
       showMessage(response.message || 'Login berhasil!', 'success'); 
       
