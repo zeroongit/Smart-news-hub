@@ -1,5 +1,8 @@
+// smart-news-frontend/src/pages/Home.jsx
+
 import React, { useEffect, useState } from 'react';
-import { getPublicNews, showMessage } from '../services/api';
+// Mengimpor fungsi API yang dibutuhkan, termasuk getUniqueCategories
+import { getPublicNews, showMessage, getUniqueCategories } from '../services/api'; 
 import NewsCard from '../components/NewsCard';
 import { Link, useParams } from 'react-router-dom'; 
 import Navbar from '../components/Navbar';
@@ -11,8 +14,26 @@ function Home() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(categoryName || ''); 
+  const [availableCategories, setAvailableCategories] = useState([]); // State untuk kategori dinamis
 
-  const categories = ['Politik', 'Ekonomi', 'Olahraga', 'Teknologi', 'Hiburan', 'lingkungan', 'Lainnya'];
+  // Fungsi untuk mengambil kategori unik dari backend
+  const fetchCategories = async () => {
+    try {
+      const data = await getUniqueCategories();
+      // Pastikan 'Umum' ada di daftar jika belum ada dari database, lalu tambahkan di awal
+      if (!data.includes('Umum')) {
+          data.unshift('Umum'); 
+      }
+      setAvailableCategories(data);
+    } catch (err) {
+      console.error("Error fetching unique categories for Home:", err);
+      // showMessage("Gagal memuat daftar kategori.", "error"); // Opsional: tampilkan pesan error
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories(); // Panggil saat komponen dimuat untuk mengisi dropdown
+  }, []); // Hanya berjalan sekali saat mount
 
   useEffect(() => {
     setSelectedCategory(categoryName || ''); 
@@ -53,17 +74,23 @@ function Home() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-xl font-semibold">Memuat berita...</p>
-      </div>
+      <>
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-xl font-semibold">Memuat berita...</p>
+        </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-red-500 text-xl">Error: {error}</p>
-      </div>
+      <>
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-red-500 text-xl">Error: {error}</p>
+        </div>
+      </>
     );
   }
 
@@ -87,7 +114,8 @@ function Home() {
             onChange={(e) => setSelectedCategory(e.target.value)}
             >
             <option value="">Semua Kategori</option>
-            {categories.map((cat) => (
+            {/* Menggunakan kategori dinamis yang diambil dari backend */}
+            {availableCategories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>

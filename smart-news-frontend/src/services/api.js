@@ -1,6 +1,15 @@
+// smart-news-frontend/src/services/api.js
+
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+console.log("API_BASE_URL di frontend:", API_BASE_URL); 
+
+if (!API_BASE_URL) {
+  console.error("API_BASE_URL is not defined! Please check Vercel Environment Variables and .env file.");
+}
+
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,11 +31,10 @@ api.interceptors.request.use(
   }
 );
 
-// --- Fungsi-fungsi API berdasarkan Rute Backend ---
+// --- Fungsi-fungsi API berdasarkan Rute Backend Anda ---
 
-// Rute Publik (Public Routes)
-// GET /api/news 
-export const getPublicNews = async (params = {}) => { // Menambahkan parameter params
+// Rute Publik
+export const getPublicNews = async (params = {}) => {
   try {
     const response = await api.get('/news', { params });
     return response.data;
@@ -36,8 +44,39 @@ export const getPublicNews = async (params = {}) => { // Menambahkan parameter p
   }
 };
 
+export const getNewsByCategory = async (categoryName) => {
+  try {
+    const response = await api.get(`/news/category/${categoryName}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news by category ${categoryName}:`, error);
+    throw error;
+  }
+};
 
-// POST /api/auth/register
+export const getNewsDetailsByCategoryAndId = async (categoryName, id) => {
+  try {
+    const requestUrl = `/news/category/${categoryName}/${id}`;
+    console.log(`Frontend requesting news details from: ${API_BASE_URL}${requestUrl}`);
+    const response = await api.get(requestUrl);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news details for ID ${id} in category ${categoryName}:`, error);
+    throw error;
+  }
+};
+
+export const getUniqueCategories = async () => {
+  try {
+    const response = await api.get('/news/categories');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching unique categories:', error);
+    throw error;
+  }
+};
+
+// Autentikasi
 export const registerUser = async (userData) => {
   try {
     const response = await api.post('/auth/register', userData);
@@ -48,7 +87,6 @@ export const registerUser = async (userData) => {
   }
 };
 
-// POST /api/auth/login
 export const loginUser = async (credentials) => {
   try {
     const response = await api.post('/auth/login', credentials);
@@ -62,32 +100,7 @@ export const loginUser = async (credentials) => {
   }
 };
 
-// Path: /api/news/category/:categoryName
-export const getNewsByCategory = async (categoryName) => {
-  try {
-    const response = await api.get(`/news/category/${categoryName}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching news by category ${categoryName}:`, error);
-    throw error;
-  }
-};
-
-// GET berita tunggal berdasarkan ID dan kategori
-// Path: /api/news/category/:categoryName/:id
-export const getNewsDetailsByCategoryAndId = async (categoryName, id) => {
-  try {
-    const response = await api.get(`/news/category/<span class="math-inline">\{categoryName\}/</span>{id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching news details for ID ${id} in category ${categoryName}:`, error);
-    throw error;
-  }
-};
-
-// Rute Terproteksi (Protected Routes) - Membutuhkan token
-
-// POST /api/news
+// Artikel (Terproteksi)
 export const createNews = async (newsData) => {
   try {
     const response = await api.post('/news', newsData);
@@ -98,7 +111,6 @@ export const createNews = async (newsData) => {
   }
 };
 
-// PUT /api/news/:id
 export const updateNews = async (id, newsData) => {
   try {
     const response = await api.put(`/news/${id}`, newsData);
@@ -109,7 +121,30 @@ export const updateNews = async (id, newsData) => {
   }
 };
 
-// GET /api/news/status/:status (contoh untuk Dashboard/AdminDashboard)
+// BARU: Fungsi untuk meminta penghapusan berita (mengubah status menjadi ReviewDelete)
+export const requestDeleteNews = async (id) => {
+  try {
+    const response = await api.put(`/news/request-delete/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error requesting delete for news ID ${id}:`, error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
+
+
+// Artikel berdasarkan User
+export const getNewsByUserId = async (userId) => {
+  try {
+    const response = await api.get(`/news/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching news by user ID ${userId}:`, error);
+    throw error;
+  }
+};
+
+// Admin
 export const getNewsByStatus = async (status) => {
   try {
     const response = await api.get(`/news/status/${status}`);
@@ -120,18 +155,6 @@ export const getNewsByStatus = async (status) => {
   }
 };
 
-// GET /api/news/author/:authorId (contoh untuk Dashboard/AdminDashboard)
-export const getNewsByAuthor = async (authorId) => {
-  try {
-    const response = await api.get(`/news/author/${authorId}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching news by author ${authorId}:`, error);
-    throw error;
-  }
-};
-
-// PUT /api/news/approve/:id (hanya Admin)
 export const approveNews = async (id) => {
   try {
     const response = await api.put(`/news/approve/${id}`);
@@ -142,7 +165,6 @@ export const approveNews = async (id) => {
   }
 };
 
-// PUT /api/news/reject/:id (hanya Admin)
 export const rejectNews = async (id) => {
   try {
     const response = await api.put(`/news/reject/${id}`);
@@ -153,7 +175,6 @@ export const rejectNews = async (id) => {
   }
 };
 
-// DELETE /api/news/:id (hanya Admin)
 export const deleteNews = async (id) => {
   try {
     const response = await api.delete(`/news/${id}`);
@@ -164,9 +185,17 @@ export const deleteNews = async (id) => {
   }
 };
 
-// --- Rute Pengguna (User Routes) ---
+export const getAllNewsForAdmin = async () => {
+  try {
+    const response = await api.get('/news/admin/all');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching all news for admin:', error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
 
-// GET /api/users/profile
+// Profil Pengguna
 export const getUserProfile = async () => {
   try {
     const response = await api.get('/users/profile');
@@ -177,7 +206,6 @@ export const getUserProfile = async () => {
   }
 };
 
-// PUT /api/users/profile
 export const updateUserProfile = async (profileData) => {
   try {
     const response = await api.put('/users/profile', profileData);
@@ -188,8 +216,7 @@ export const updateUserProfile = async (profileData) => {
   }
 };
 
-// --- Rute Upload ---
-// POST /api/upload/image
+// Upload Gambar
 export const uploadImage = async (formData) => {
   try {
     const response = await api.post('/upload/image', formData, {
@@ -204,6 +231,11 @@ export const uploadImage = async (formData) => {
   }
 };
 
+/**
+ * Menampilkan pesan sebagai modal sederhana.
+ * @param {string} message - Pesan yang akan ditampilkan.
+ * @param {string} type - Tipe pesan ('success', 'error', 'info'). Default 'success'.
+ */
 function showMessage(message, type = 'success') {
   const messageBox = document.createElement('div');
   let bgColor = '#4CAF50';
@@ -253,16 +285,5 @@ export const logoutUser = () => {
   } catch (error) {
     console.error('Error during logout:', error);
     return { success: false, message: 'Gagal logout. Silakan coba lagi.' };
-  }
-};
-
-// GET /api/news/admin/all
-export const getAllNewsForAdmin = async () => {
-  try {
-    const response = await api.get('/news/admin/all');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching all news for admin:', error.response?.data || error.message);
-    throw error.response?.data || error;
   }
 };

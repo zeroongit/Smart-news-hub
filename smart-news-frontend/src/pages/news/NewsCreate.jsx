@@ -1,20 +1,58 @@
-import React, { useState } from 'react';
+// smart-news-frontend/src/pages/news/NewsCreate.jsx
+
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createNews, uploadImage, showMessage } from '../../services/api';
+// Mengimpor fungsi API, termasuk getUniqueCategories
+import { createNews, uploadImage, showMessage, getUniqueCategories } from '../services/api'; 
 
 function NewsCreate() {
   const navigate = useNavigate();
-  const [judul, setJudul] = useState(''); 
-  const [deskripsi, setDeskripsi] = useState(''); 
-  const [kategori, setKategori] = useState('Umum'); 
+  const [judul, setJudul] = useState('');
+  const [deskripsi, setDeskripsi] = useState('');
+  const [kategori, setKategori] = useState('Umum'); // Default ke 'Umum'
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false); // State baru untuk input kategori manual
+  const [newCategory, setNewCategory] = useState(''); // State baru untuk kategori yang diketik manual
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const categories = ['Politik', 'Ekonomi', 'Olahraga', 'Teknologi', 'Hiburan', 'Lainnya'];
+  const [availableCategories, setAvailableCategories] = useState([]); // State untuk kategori dinamis
+
+  // Fetch kategori unik saat komponen dimuat
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getUniqueCategories();
+        // Pastikan 'Umum' ada di daftar jika belum ada dari database
+        if (!data.includes('Umum')) {
+            data.unshift('Umum'); // Tambahkan 'Umum' di awal jika tidak ada
+        }
+        setAvailableCategories(data);
+        // Set kategori default ke yang pertama atau 'Umum' jika ada dan belum dipilih
+        if (data.length > 0 && kategori === 'Umum') {
+            setKategori(data[0]);
+        }
+      } catch (err) {
+        console.error("Error fetching unique categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []); 
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
+  };
+
+  const handleCategoryChange = (e) => {
+    const selectedValue = e.target.value;
+    setKategori(selectedValue);
+    if (selectedValue === 'new-category-option') { // Jika opsi 'Tambahkan Kategori Baru' dipilih
+      setShowNewCategoryInput(true);
+      setNewCategory(''); // Bersihkan input manual
+    } else {
+      setShowNewCategoryInput(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -29,22 +67,34 @@ function NewsCreate() {
       return;
     }
 
+    // Tentukan kategori akhir yang akan dikirim
+    let finalKategori = kategori;
+    if (showNewCategoryInput) {
+      if (!newCategory.trim()) {
+        setError('Nama kategori baru tidak boleh kosong.');
+        showMessage('Nama kategori baru tidak boleh kosong.', 'error');
+        setLoading(false);
+        return;
+      }
+      finalKategori = newCategory.trim();
+    }
+
     const user = JSON.parse(localStorage.getItem('user'));
-    const penulis = user ? user.username : 'Anonim'; 
+    const penulis = user ? user.username : 'Anonim';
 
     try {
       const formData = new FormData();
       formData.append('image', selectedFile);
       
       const uploadResponse = await uploadImage(formData);
-      const gambarUrl = uploadResponse.imageUrl; // Ambil URL gambar yang diunggah dari respons
+      const gambarUrl = uploadResponse.imageUrl;
 
       const newsData = { 
         judul, 
         deskripsi, 
-        gambar: gambarUrl, 
-        penulis, 
-        kategori 
+        gambar: gambarUrl,
+        penulis,
+        kategori: finalKategori // Gunakan kategori akhir yang sudah ditentukan
       }; 
       await createNews(newsData);
       
@@ -97,13 +147,26 @@ function NewsCreate() {
               id="kategori"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               value={kategori}
-              onChange={(e) => setKategori(e.target.value)}
+              onChange={handleCategoryChange} // Menggunakan handler baru
               required
             >
-              {categories.map((cat) => (
+              {/* Render kategori dinamis dari database */}
+              {availableCategories.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
+              {/* Opsi untuk menambahkan kategori baru */}
+              <option value="new-category-option">-- Tambahkan Kategori Baru --</option>
             </select>
+            {showNewCategoryInput && (
+              <input
+                type="text"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mt-2"
+                placeholder="Nama Kategori Baru"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                required
+              />
+            )}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="gambar">
@@ -111,7 +174,7 @@ function NewsCreate() {
             </label>
             <input
               type="file"
-              id="gambar" 
+              id="gambar"
               accept="image/*"
               className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
               onChange={handleFileChange}
