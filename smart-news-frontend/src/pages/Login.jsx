@@ -14,8 +14,18 @@ function Login() {
     setError(null); // 
     try {
       const response = await loginUser({ email, password }); 
+      console.log('Login successful response:', response); // Debugging: lihat respons dari backend
+
       showMessage(response.message || 'Login berhasil!', 'success'); 
-      navigate('/dashboard'); 
+      
+      // Setelah pesan ditampilkan, tunggu sebentar untuk memastikan localStorage terisi
+      // dan kemudian navigasi. Ini kadang membantu sinkronisasi.
+      // Opsional: Anda bisa menghapus setTimeout ini jika masalah teratasi
+      setTimeout(() => {
+        console.log('Attempting to navigate to /dashboard'); // Debugging: konfirmasi navigasi dipanggil
+        navigate('/dashboard'); 
+      }, 100); // Sedikit delay (100ms)
+      
     } catch (err) {
       setError(err.message || 'Login gagal. Silakan coba lagi.'); 
       showMessage(err.message || 'Login gagal. Silakan coba lagi.', 'error');
