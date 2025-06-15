@@ -7,8 +7,7 @@ function NewsCard({ news }) {
   const categorySlug = news.kategori ? news.kategori.toLowerCase().replace(/\s+/g, '-') : 'uncategorized';
   const detailUrl = `/news/${categorySlug}/${news._id}`; // URL yang akan dihasilkan
 
-  // Debugging: Lihat URL yang sebenarnya dibuat oleh NewsCard
-  console.log(`NewsCard: Generating link for Judul: "${news.judul}", Kategori: "${news.kategori}" (Slug: "${categorySlug}"), ID: "${news._id}". Full URL: "${detailUrl}"`);
+
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
