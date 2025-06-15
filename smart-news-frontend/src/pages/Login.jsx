@@ -34,8 +34,8 @@ function Login() {
       // Memberikan sedikit waktu untuk localStorage untuk benar-benar sinkron
       // dan untuk React merender ulang sebelum navigasi
       setTimeout(() => {
-        console.log('Attempting to navigate to /dashboard after delay...'); // Debugging: konfirmasi navigasi dipanggil
-        navigate('/dashboard'); 
+        console.log('Attempting to navigate to dashboard based on role...');
+        navigate(user.role === 'admin' ? '/admindashboard' : '/dashboard'); 
       }, 50); // Delay singkat (50ms)
 
     } catch (err) {
