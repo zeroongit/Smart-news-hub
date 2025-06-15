@@ -16,30 +16,33 @@ function Login() {
 
     try {
       const response = await loginUser({ email, password }); 
+      console.log("Login response raw:", response);
+
       const user = response?.data?.user;
 
       if (user && user.token && user.username && user._id) {
         localStorage.setItem('user', JSON.stringify(user));
-        console.log('User data saved to localStorage:', user);
+        console.log('User data saved:', user);
       } else {
-        console.warn('Login response did not contain expected token or user data:', response);
+        console.warn('Login response did not contain expected token or user data:', response?.data);
         showMessage('Login gagal. Data user tidak lengkap.', 'error');
         return;
       }
 
-      showMessage(response?.data?.message || 'Login berhasil!', 'success');
+      showMessage(response.data.message || 'Login berhasil!', 'success');
 
       setTimeout(() => {
-        console.log('Attempting to navigate to dashboard based on role...');
+        console.log('Navigating to role-based dashboard...');
         navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
       }, 50);
-
+      
     } catch (err) {
       setError(err.message || 'Login gagal. Silakan coba lagi.');
       showMessage(err.message || 'Login gagal. Silakan coba lagi.', 'error');
       console.error('Login error:', err);
     }
   };
+
 
 
   return (
