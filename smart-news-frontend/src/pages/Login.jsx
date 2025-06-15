@@ -11,39 +11,36 @@ function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
+  e.preventDefault();
+  setError(null);
+
     try {
       const response = await loginUser({ email, password }); 
-      console.log('Login successful response from backend:', response); // Debugging: lihat respons dari backend
-
-      const user = response.user;
+      const user = response?.data?.user;
 
       if (user && user.token && user.username && user._id) {
         localStorage.setItem('user', JSON.stringify(user));
-        console.log('User data successfully saved to localStorage!');
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        console.log('User data retrieved immediately from localStorage:', storedUser);
+        console.log('User data saved to localStorage:', user);
       } else {
         console.warn('Login response did not contain expected token or user data:', response);
+        showMessage('Login gagal. Data user tidak lengkap.', 'error');
+        return;
       }
 
+      showMessage(response?.data?.message || 'Login berhasil!', 'success');
 
-      showMessage(response.message || 'Login berhasil!', 'success'); 
-      
-      // Memberikan sedikit waktu untuk localStorage untuk benar-benar sinkron
-      // dan untuk React merender ulang sebelum navigasi
       setTimeout(() => {
         console.log('Attempting to navigate to dashboard based on role...');
-        navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard'); 
-      }, 50); // Delay singkat (50ms)
+        navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+      }, 50);
 
     } catch (err) {
-      setError(err.message || 'Login gagal. Silakan coba lagi.'); 
+      setError(err.message || 'Login gagal. Silakan coba lagi.');
       showMessage(err.message || 'Login gagal. Silakan coba lagi.', 'error');
       console.error('Login error:', err);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
