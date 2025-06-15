@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs'); // Menggunakan bcryptjs (lebih disarankan un
 const jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema({
-  name: {
+  username: {
     type: String,
     required: true,
     trim: true
