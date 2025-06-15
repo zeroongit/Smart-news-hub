@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Mengimpor fungsi API, termasuk getUniqueCategories
-import { createNews, uploadImage, showMessage, getUniqueCategories } from '../services/api'; 
+import { createNews, uploadImage, showMessage, getUniqueCategories } from '../../services/api'; 
 
 function NewsCreate() {
   const navigate = useNavigate();
