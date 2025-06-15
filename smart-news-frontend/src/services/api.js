@@ -90,15 +90,19 @@ export const registerUser = async (userData) => {
 export const loginUser = async (credentials) => {
   try {
     const response = await api.post('/auth/login', credentials);
-    if (response.data && response.data.token) {
-      localStorage.setItem('user', JSON.stringify(response.data));
+    const user = response.data?.user;
+
+    if (user && user.token) {
+      localStorage.setItem('user', JSON.stringify(user));
     }
+
     return response.data;
   } catch (error) {
     console.error('Error logging in user:', error.response?.data || error.message);
     throw error.response?.data || error;
   }
 };
+
 
 // Artikel (Terproteksi)
 export const createNews = async (newsData) => {
