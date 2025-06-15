@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getNewsDetailsByCategoryAndId, showMessage } from '../../services/api'; 
 
 function NewsDetails() {
-  const { id, categoryName } = useParams(); // Mengambil categoryName dan id dari URL
+  const { id, categoryName } = useParams(); 
   const [newsItem, setNewsItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

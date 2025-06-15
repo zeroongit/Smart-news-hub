@@ -12,7 +12,7 @@ function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(categoryName || ''); 
 
-  const categories = ['Politik', 'Ekonomi', 'Olahraga', 'Teknologi', 'Hiburan', 'Lainnya'];
+  const categories = ['Politik', 'Ekonomi', 'Olahraga', 'Teknologi', 'Hiburan', 'lingkungan', 'Lainnya'];
 
   useEffect(() => {
     setSelectedCategory(categoryName || ''); 
