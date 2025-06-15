@@ -1,7 +1,8 @@
+// smart-news-frontend/src/pages/Login.jsx
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, showMessage } from '../services/api';
+import { loginUser, showMessage } from '../services/api'; // Path diperbaiki
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -11,21 +12,35 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // 
+    setError(null);
     try {
       const response = await loginUser({ email, password }); 
-      console.log('Login successful response:', response); // Debugging: lihat respons dari backend
+      console.log('Login successful response from backend:', response); // Debugging: lihat respons dari backend
+
+      // Ini adalah bagian yang paling penting untuk debugging
+      if (response.token && response.username && response.role) { // Pastikan data penting ada
+        localStorage.setItem('user', JSON.stringify({
+          token: response.token,
+          username: response.username,
+          role: response.role,
+          _id: response._id // Jika _id juga dikirim dari backend
+        }));
+        console.log('User data successfully saved to localStorage!');
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        console.log('User data retrieved immediately from localStorage:', storedUser);
+      } else {
+        console.warn('Login response did not contain expected token or user data:', response);
+      }
 
       showMessage(response.message || 'Login berhasil!', 'success'); 
       
-      // Setelah pesan ditampilkan, tunggu sebentar untuk memastikan localStorage terisi
-      // dan kemudian navigasi. Ini kadang membantu sinkronisasi.
-      // Opsional: Anda bisa menghapus setTimeout ini jika masalah teratasi
+      // Memberikan sedikit waktu untuk localStorage untuk benar-benar sinkron
+      // dan untuk React merender ulang sebelum navigasi
       setTimeout(() => {
-        console.log('Attempting to navigate to /dashboard'); // Debugging: konfirmasi navigasi dipanggil
+        console.log('Attempting to navigate to /dashboard after delay...'); // Debugging: konfirmasi navigasi dipanggil
         navigate('/dashboard'); 
-      }, 100); // Sedikit delay (100ms)
-      
+      }, 50); // Delay singkat (50ms)
+
     } catch (err) {
       setError(err.message || 'Login gagal. Silakan coba lagi.'); 
       showMessage(err.message || 'Login gagal. Silakan coba lagi.', 'error');
