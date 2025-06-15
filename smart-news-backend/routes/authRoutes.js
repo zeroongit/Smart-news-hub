@@ -68,7 +68,16 @@ router.post('/login', async (req, res) => {
     }
 
     const token = user.generateAuthToken(); // Asumsi ada method ini di User model
-    res.json({ message: 'Login berhasil!', token, role: user.role, username: user.username });
+    res.json({
+  message: 'Login berhasil!',
+  user: {
+    _id: user._id,
+    username: user.username,
+    role: user.role,
+    token 
+  }
+});
+
   } catch (err) {
     logError(err, 'Gagal login pengguna');
     res.status(500).json({ error: 'Terjadi kesalahan server saat login.' });

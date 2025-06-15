@@ -81,7 +81,7 @@ userSchema.methods.generateAuthToken = function () {
   }
 
   const token = jwt.sign(
-    { _id: this._id, role: this.role, username: this.name }, // Payload token
+    { _id: this._id, role: this.role, username: this.username }, // Payload token
     process.env.JWT_SECRET, // Menggunakan JWT_SECRET dari environment variables
     { expiresIn: '1h' } // Token berlaku 1 jam
   );
