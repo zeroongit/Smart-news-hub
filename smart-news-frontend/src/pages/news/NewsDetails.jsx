@@ -1,6 +1,8 @@
+// smart-news-frontend/src/pages/news/NewsDetails.jsx
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getNewsDetailsByCategoryAndId, showMessage } from '../../services/api'; 
+import { getNewsDetailsByCategoryAndId, showMessage } from '../services/api'; 
 
 function NewsDetails() {
   const { id, categoryName } = useParams(); 
@@ -57,7 +59,7 @@ function NewsDetails() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">{newsItem.judul}</h1> 
+      <h1 className="text-3xl font-bold mb-4">{newsItem.judul}</h1>
       {newsItem.gambar && ( 
         <img
           src={newsItem.gambar} 
@@ -67,12 +69,14 @@ function NewsDetails() {
         />
       )}
       <p className="text-gray-600 text-sm mb-2">
-        Oleh {newsItem.penulis} pada {new Date(newsItem.created_at).toLocaleDateString()} 
-        {newsItem.kategori && ` | Kategori: ${newsItem.kategori}`} 
+        Oleh {newsItem.penulis} pada {new Date(newsItem.created_at).toLocaleDateString()}
+        {newsItem.kategori && ` | Kategori: ${newsItem.kategori}`}
       </p>
-      <div className="prose max-w-none mb-4">
-        <p>{newsItem.deskripsi}</p> 
-      </div>
+      {/* Menampilkan deskripsi sebagai HTML menggunakan dangerouslySetInnerHTML */}
+      <div 
+        className="prose max-w-none mb-4" 
+        dangerouslySetInnerHTML={{ __html: newsItem.deskripsi }} 
+      />
     </div>
   );
 }
