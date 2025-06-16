@@ -10,7 +10,7 @@ import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align'; // Untuk perataan teks
 
 // Mengimpor fungsi API
-import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage, getUniqueCategories } from '../services/api'; 
+import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage, getUniqueCategories } from '../../services/api'; 
 
 // Komponen Toolbar sederhana untuk Tiptap (bisa disatukan atau dibuat terpisah jika sudah ada)
 const TiptapToolbar = ({ editor }) => {
