@@ -2,49 +2,253 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-// Mengimpor fungsi API yang dibutuhkan, termasuk getUniqueCategories
-import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage, getUniqueCategories } from '../../services/api'; 
+// Mengimpor komponen dan hooks Tiptap
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align'; // Untuk perataan teks
+
+// Mengimpor fungsi API
+import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage, getUniqueCategories } from '../services/api'; 
+
+// Komponen Toolbar sederhana untuk Tiptap (bisa disatukan atau dibuat terpisah jika sudah ada)
+const TiptapToolbar = ({ editor }) => {
+  if (!editor) {
+    return null;
+  }
+
+  return (
+    <div className="border border-gray-300 rounded-t-md p-2 bg-gray-50 flex flex-wrap gap-1">
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={editor.isActive('bold') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        Bold
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={editor.isActive('italic') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        Italic
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        className={editor.isActive('strike') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        Strike
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        className={editor.isActive('blockquote') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        Quote
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        className="p-1 rounded text-gray-700 hover:bg-gray-200"
+      >
+        HR
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setHardBreak().run()}
+        className="p-1 rounded text-gray-700 hover:bg-gray-200"
+      >
+        BR
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+        className="p-1 rounded text-gray-700 hover:bg-gray-200"
+      >
+        Clear
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().undo().run()}
+        className="p-1 rounded text-gray-700 hover:bg-gray-200"
+      >
+        Undo
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().redo().run()}
+        className="p-1 rounded text-gray-700 hover:bg-gray-200"
+      >
+        Redo
+      </button>
+      
+      {/* Contoh heading */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        className={editor.isActive('heading', { level: 1 }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        H1
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className={editor.isActive('heading', { level: 2 }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        H2
+      </button>
+
+      {/* Contoh list */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={editor.isActive('bulletList') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        UL
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={editor.isActive('orderedList') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        OL
+      </button>
+
+      {/* Contoh link */}
+      <button
+        type="button"
+        onClick={() => {
+          const url = window.prompt('URL?');
+          if (url) {
+            editor.chain().focus().setLink({ href: url }).run();
+          }
+        }}
+        className={editor.isActive('link') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        Link
+      </button>
+
+      {/* Contoh image - asumsi URL gambar dari luar */}
+      <button
+        type="button"
+        onClick={() => {
+          const url = window.prompt('URL Gambar?');
+          if (url) {
+            editor.chain().focus().setImage({ src: url }).run();
+          }
+        }}
+        className="p-1 rounded text-gray-700 hover:bg-gray-200"
+      >
+        Image
+      </button>
+
+      {/* Contoh Text Align */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        className={editor.isActive({ textAlign: 'left' }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        Align Left
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        className={editor.isActive({ textAlign: 'center' }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        Align Center
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        className={editor.isActive({ textAlign: 'right' }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
+      >
+        Align Right
+      </button>
+    </div>
+  );
+};
 
 function NewsEdit() {
   const { id, categoryName } = useParams(); 
   const navigate = useNavigate();
   const [judul, setJudul] = useState('');
-  const [deskripsi, setDeskripsi] = useState(''); 
-  const [kategori, setKategori] = useState('Umum'); // Default ke 'Umum'
+  const [deskripsi, setDeskripsi] = useState(''); // Deskripsi akan menjadi HTML string dari Tiptap
+  const [kategori, setKategori] = useState('Umum');
   const [gambarUrl, setGambarUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null); 
 
-  const [availableCategories, setAvailableCategories] = useState([]); // State untuk kategori dinamis
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false); // State untuk input kategori baru
-  const [newCategory, setNewCategory] = useState(''); // State untuk nilai kategori baru
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
 
-  // Fetch kategori unik saat komponen dimuat
+  // Setup Tiptap editor
+  // Penting: content harus diinisialisasi dengan deskripsi yang sudah ada
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        history: false, // History extension can be problematic, disable if issues occur
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          target: '_blank',
+          rel: 'noopener noreferrer nofollow',
+        },
+      }),
+      Image.configure({
+        inline: true,
+        allowBase64: true,
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+    ],
+    content: deskripsi, // <-- Inisialisasi konten editor dari state deskripsi
+    onUpdate: ({ editor }) => {
+      setDeskripsi(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose max-w-none focus:outline-none p-3 min-h-[200px] border border-gray-300 rounded-b-md bg-white',
+      },
+    },
+  });
+
+  // Efek samping untuk mengatur konten editor Tiptap ketika `deskripsi` berubah (misalnya, setelah data berita dimuat)
+  useEffect(() => {
+    if (editor && deskripsi !== editor.getHTML()) {
+      editor.commands.setContent(deskripsi);
+    }
+  }, [deskripsi, editor]); // Tambahkan editor sebagai dependensi
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const data = await getUniqueCategories();
-        // Pastikan 'Umum' ada di daftar jika belum ada dari database
         if (!data.includes('Umum')) {
-            data.unshift('Umum'); // Tambahkan 'Umum' di awal jika tidak ada
+            data.unshift('Umum');
         }
         setAvailableCategories(data);
-        // Penting: Jangan ubah setKategori default di sini, 
-        // karena kategori akan diisi dari data berita yang sedang diedit.
+        // Jika kategori yang sedang diedit tidak ada di daftar dinamis, tambahkan sementaranya
+        if (kategori && !data.includes(kategori)) {
+          setAvailableCategories(prev => [...prev, kategori]);
+        }
       } catch (err) {
         console.error("Error fetching unique categories:", err);
       }
     };
     fetchCategories();
-  }, []); // Hanya berjalan sekali saat mount
+  }, [kategori]); // Dependensi pada 'kategori' agar diperbarui jika kategori berita berubah
 
   useEffect(() => {
     const fetchNews = async () => {
       try {
         const data = await getNewsDetailsByCategoryAndId(categoryName, id); 
-        // Memastikan hanya penulis atau admin yang bisa mengedit
         const currentUser = JSON.parse(localStorage.getItem('user'));
         if (currentUser.role !== 'admin' && data.user_id !== currentUser._id) { 
           showMessage('Anda tidak memiliki izin untuk mengedit berita ini.', 'error');
@@ -53,8 +257,8 @@ function NewsEdit() {
         }
 
         setJudul(data.judul);
-        setDeskripsi(data.deskripsi);
-        setKategori(data.kategori); // Set kategori dari data berita yang sudah ada
+        setDeskripsi(data.deskripsi); // Ini akan memicu useEffect untuk editor
+        setKategori(data.kategori);
         setGambarUrl(data.gambar);
       } catch (err) {
         setError(err.message || 'Gagal memuat berita untuk diedit.');
@@ -75,7 +279,7 @@ function NewsEdit() {
       showMessage('ID Berita atau Kategori tidak ditemukan.', 'error');
       setLoading(false);
     }
-  }, [id, categoryName, navigate]); // Tambahkan navigate sebagai dependensi
+  }, [id, categoryName, navigate]); 
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -84,9 +288,9 @@ function NewsEdit() {
   const handleCategoryChange = (e) => {
     const selectedValue = e.target.value;
     setKategori(selectedValue);
-    if (selectedValue === 'new-category-option') { // Jika opsi 'Tambahkan Kategori Baru' dipilih
+    if (selectedValue === 'new-category-option') { 
       setShowNewCategoryInput(true);
-      setNewCategory(''); // Bersihkan input manual
+      setNewCategory(''); 
     } else {
       setShowNewCategoryInput(false);
     }
@@ -108,6 +312,15 @@ function NewsEdit() {
       finalKategori = newCategory.trim();
     }
 
+    // Validasi deskripsi Tiptap
+    const plainTextDeskripsi = editor ? editor.getText().trim() : '';
+    if (!plainTextDeskripsi) {
+      setError('Deskripsi tidak boleh kosong.');
+      showMessage('Deskripsi tidak boleh kosong.', 'error');
+      setLoading(false);
+      return;
+    }
+
     let newGambarUrl = gambarUrl;
 
     try {
@@ -120,13 +333,16 @@ function NewsEdit() {
 
       const updatedNews = { 
         judul, 
-        deskripsi, 
-        kategori: finalKategori, // Gunakan kategori akhir yang sudah ditentukan
+        deskripsi: editor.getHTML(), // Kirim konten HTML dari Tiptap
+        kategori: finalKategori,
         gambar: newGambarUrl 
       };
       await updateNews(id, updatedNews); 
       
       showMessage('Berita berhasil diperbarui!', 'success');
+      // Panggil ulang fetchCategories setelah update berhasil untuk memperbarui dropdown global
+      fetchCategories(); 
+
       navigate('/dashboard'); 
     } catch (err) {
       setError(err.message || 'Gagal memperbarui berita.');
@@ -172,16 +388,13 @@ function NewsEdit() {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="deskripsi">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
               Deskripsi:
             </label>
-            <textarea
-              id="deskripsi"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-none"
-              value={deskripsi}
-              onChange={(e) => setDeskripsi(e.target.value)}
-              required
-            ></textarea>
+            {/* Tiptap Toolbar */}
+            <TiptapToolbar editor={editor} />
+            {/* Tiptap Editor */}
+            <EditorContent editor={editor} />
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="kategori">
@@ -191,14 +404,12 @@ function NewsEdit() {
               id="kategori"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               value={kategori}
-              onChange={handleCategoryChange} // Menggunakan handler baru
+              onChange={handleCategoryChange}
               required
             >
-              {/* Render kategori dinamis dari database */}
               {availableCategories.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
-              {/* Opsi untuk menambahkan kategori baru */}
               <option value="new-category-option">-- Tambahkan Kategori Baru --</option>
             </select>
             {showNewCategoryInput && (
