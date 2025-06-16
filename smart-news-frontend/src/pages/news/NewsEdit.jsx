@@ -245,10 +245,13 @@ function NewsEdit() {
                 height: 300,
                 menubar: true, // Menampilkan menu bar seperti Word
                 plugins: [
-                  'advlist autolink lists link image charmap print preview anchor',
-                  'searchreplace visualblocks code fullscreen',
-                  'insertdatetime media table paste code help wordcount'
+                  "insertdatetime", "media", "table", "paste",
+                  "code", "help", "wordcount", "searchreplace",
+                  "visualblocks", "fullscreen", "advlist",
+                  "autolink", "lists", "link", "image",
+                  "charmap", "print", "preview", "anchor"
                 ],
+
                 toolbar: 
                   'undo redo | formatselect | ' +
                   'bold italic backcolor | alignleft aligncenter ' +
