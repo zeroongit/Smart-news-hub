@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Editor } from '@tinymce/tinymce-react';
 
 // Mengimpor fungsi API
-import { createNews, uploadImage, showMessage, getUniqueCategories } from '../services/api'; 
+import { createNews, uploadImage, showMessage, getUniqueCategories } from '../../services/api'; 
 
 function NewsCreate() {
   const navigate = useNavigate();

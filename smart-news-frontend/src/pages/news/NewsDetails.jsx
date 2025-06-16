@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getNewsDetailsByCategoryAndId, showMessage } from '../services/api'; 
+import { getNewsDetailsByCategoryAndId, showMessage } from '../../services/api'; 
 
 function NewsDetails() {
   const { id, categoryName } = useParams(); 

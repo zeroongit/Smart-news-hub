@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Editor } from '@tinymce/tinymce-react';
 
 // Mengimpor fungsi API
-import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage, getUniqueCategories } from '../services/api'; 
+import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage, getUniqueCategories } from '../../services/api'; 
 
 function NewsEdit() {
   const { id, categoryName } = useParams(); 
