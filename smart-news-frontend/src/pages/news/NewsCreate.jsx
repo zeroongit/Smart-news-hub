@@ -26,7 +26,7 @@ function NewsCreate() {
 
   // Kunci API TinyMCE dari environment variable
   // Pastikan VITE_TINYMCE_API_KEY diatur di Vercel Environment Variables untuk frontend
-  const tinymceApiKey = import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key'; // Ganti 'no-api-key' dengan kunci Anda jika tidak menggunakan env
+  const tinymceApiKey = import.meta.env.VITE_TINYMCE_API_KEY; // Ganti 'no-api-key' dengan kunci Anda jika tidak menggunakan env
 
   // Fungsi untuk mengambil kategori unik dari backend
   const fetchCategories = async () => {
