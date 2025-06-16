@@ -1,249 +1,55 @@
 // smart-news-frontend/src/pages/news/NewsEdit.jsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react'; // Impor useRef
 import { useParams, useNavigate } from 'react-router-dom';
-// Mengimpor komponen dan hooks Tiptap
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import TextAlign from '@tiptap/extension-text-align'; // Untuk perataan teks
+// Impor komponen Editor dari tinymce-react
+import { Editor } from '@tinymce/tinymce-react';
 
 // Mengimpor fungsi API
-import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage, getUniqueCategories } from '../../services/api'; 
-
-// Komponen Toolbar sederhana untuk Tiptap (bisa disatukan atau dibuat terpisah jika sudah ada)
-const TiptapToolbar = ({ editor }) => {
-  if (!editor) {
-    return null;
-  }
-
-  return (
-    <div className="border border-gray-300 rounded-t-md p-2 bg-gray-50 flex flex-wrap gap-1">
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={editor.isActive('bold') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        Bold
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={editor.isActive('italic') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        Italic
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={editor.isActive('strike') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        Strike
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={editor.isActive('blockquote') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        Quote
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-        className="p-1 rounded text-gray-700 hover:bg-gray-200"
-      >
-        HR
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setHardBreak().run()}
-        className="p-1 rounded text-gray-700 hover:bg-gray-200"
-      >
-        BR
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-        className="p-1 rounded text-gray-700 hover:bg-gray-200"
-      >
-        Clear
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().undo().run()}
-        className="p-1 rounded text-gray-700 hover:bg-gray-200"
-      >
-        Undo
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().redo().run()}
-        className="p-1 rounded text-gray-700 hover:bg-gray-200"
-      >
-        Redo
-      </button>
-      
-      {/* Contoh heading */}
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={editor.isActive('heading', { level: 1 }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        H1
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={editor.isActive('heading', { level: 2 }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        H2
-      </button>
-
-      {/* Contoh list */}
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={editor.isActive('bulletList') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        UL
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={editor.isActive('orderedList') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        OL
-      </button>
-
-      {/* Contoh link */}
-      <button
-        type="button"
-        onClick={() => {
-          const url = window.prompt('URL?');
-          if (url) {
-            editor.chain().focus().setLink({ href: url }).run();
-          }
-        }}
-        className={editor.isActive('link') ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        Link
-      </button>
-
-      {/* Contoh image - asumsi URL gambar dari luar */}
-      <button
-        type="button"
-        onClick={() => {
-          const url = window.prompt('URL Gambar?');
-          if (url) {
-            editor.chain().focus().setImage({ src: url }).run();
-          }
-        }}
-        className="p-1 rounded text-gray-700 hover:bg-gray-200"
-      >
-        Image
-      </button>
-
-      {/* Contoh Text Align */}
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setTextAlign('left').run()}
-        className={editor.isActive({ textAlign: 'left' }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        Align Left
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setTextAlign('center').run()}
-        className={editor.isActive({ textAlign: 'center' }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        Align Center
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setTextAlign('right').run()}
-        className={editor.isActive({ textAlign: 'right' }) ? 'bg-blue-500 text-white p-1 rounded' : 'p-1 rounded text-gray-700 hover:bg-gray-200'}
-      >
-        Align Right
-      </button>
-    </div>
-  );
-};
+import { getNewsDetailsByCategoryAndId, updateNews, uploadImage, showMessage, getUniqueCategories } from '../services/api'; 
 
 function NewsEdit() {
   const { id, categoryName } = useParams(); 
   const navigate = useNavigate();
   const [judul, setJudul] = useState('');
-  const [deskripsi, setDeskripsi] = useState(''); // Deskripsi akan menjadi HTML string dari Tiptap
+  const [deskripsi, setDeskripsi] = useState(''); // Deskripsi akan menjadi HTML string dari TinyMCE
   const [kategori, setKategori] = useState('Umum');
-  const [gambarUrl, setGambarUrl] = useState('');
+  const [gambarUrl, setGambarUrl] = useState(''); // URL gambar utama berita (untuk thumbnail card)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null); 
+  const [selectedFile, setSelectedFile] = useState(null); // Untuk gambar utama berita (thumbnail)
 
   const [availableCategories, setAvailableCategories] = useState([]);
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategory, setNewCategory] = useState('');
 
-  // Setup Tiptap editor
-  // Penting: content harus diinisialisasi dengan deskripsi yang sudah ada
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        history: false, // History extension can be problematic, disable if issues occur
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          target: '_blank',
-          rel: 'noopener noreferrer nofollow',
-        },
-      }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-    ],
-    content: deskripsi, // <-- Inisialisasi konten editor dari state deskripsi
-    onUpdate: ({ editor }) => {
-      setDeskripsi(editor.getHTML());
-    },
-    editorProps: {
-      attributes: {
-        class: 'prose max-w-none focus:outline-none p-3 min-h-[200px] border border-gray-300 rounded-b-md bg-white',
-      },
-    },
-  });
+  const editorRef = useRef(null); // Ref untuk mengakses instance editor TinyMCE
 
-  // Efek samping untuk mengatur konten editor Tiptap ketika `deskripsi` berubah (misalnya, setelah data berita dimuat)
-  useEffect(() => {
-    if (editor && deskripsi !== editor.getHTML()) {
-      editor.commands.setContent(deskripsi);
-    }
-  }, [deskripsi, editor]); // Tambahkan editor sebagai dependensi
+  // Kunci API TinyMCE dari environment variable
+  // Pastikan VITE_TINYMCE_API_KEY diatur di Vercel Environment Variables untuk frontend
+  const tinymceApiKey = import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key'; // Ganti 'no-api-key' dengan kunci Anda jika tidak menggunakan env
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getUniqueCategories();
-        if (!data.includes('Umum')) {
-            data.unshift('Umum');
-        }
-        setAvailableCategories(data);
-        // Jika kategori yang sedang diedit tidak ada di daftar dinamis, tambahkan sementaranya
-        if (kategori && !data.includes(kategori)) {
-          setAvailableCategories(prev => [...prev, kategori]);
-        }
-      } catch (err) {
-        console.error("Error fetching unique categories:", err);
+  // Fungsi untuk mengambil kategori unik dari backend
+  const fetchCategories = async () => {
+    try {
+      const data = await getUniqueCategories();
+      if (!data.includes('Umum')) {
+          data.unshift('Umum');
       }
-    };
-    fetchCategories();
-  }, [kategori]); // Dependensi pada 'kategori' agar diperbarui jika kategori berita berubah
+      setAvailableCategories(data);
+      // Jika kategori yang sedang diedit tidak ada di daftar dinamis, tambahkan sementaranya
+      if (kategori && !data.includes(kategori)) {
+        setAvailableCategories(prev => [...prev, kategori]);
+      }
+    } catch (err) {
+      console.error("Error fetching unique categories:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories(); 
+  }, [kategori]); 
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -257,9 +63,9 @@ function NewsEdit() {
         }
 
         setJudul(data.judul);
-        setDeskripsi(data.deskripsi); // Ini akan memicu useEffect untuk editor
+        setDeskripsi(data.deskripsi); // Set konten HTML ke state deskripsi
         setKategori(data.kategori);
-        setGambarUrl(data.gambar);
+        setGambarUrl(data.gambar); // Set URL gambar utama berita
       } catch (err) {
         setError(err.message || 'Gagal memuat berita untuk diedit.');
         showMessage(err.message || 'Terjadi kesalahan saat memuat berita.', 'error');
@@ -312,9 +118,12 @@ function NewsEdit() {
       finalKategori = newCategory.trim();
     }
 
-    // Validasi deskripsi Tiptap
-    const plainTextDeskripsi = editor ? editor.getText().trim() : '';
-    if (!plainTextDeskripsi) {
+    // Ambil konten HTML dari TinyMCE editor
+    const editorContent = editorRef.current ? editorRef.current.getContent() : deskripsi;
+    // Dapatkan teks biasa dari editor untuk validasi kekosongan
+    const plainTextContent = editorRef.current ? editorRef.current.getContent({ format: 'text' }).trim() : deskripsi.replace(/<[^>]*>/g, '').trim();
+
+    if (!plainTextContent) {
       setError('Deskripsi tidak boleh kosong.');
       showMessage('Deskripsi tidak boleh kosong.', 'error');
       setLoading(false);
@@ -324,25 +133,23 @@ function NewsEdit() {
     let newGambarUrl = gambarUrl;
 
     try {
-      if (selectedFile) {
+      if (selectedFile) { // Jika ada gambar utama baru yang dipilih
         const formData = new FormData();
         formData.append('image', selectedFile);
-        const uploadResponse = await uploadImage(formData);
+        const uploadResponse = await uploadImage(formData); // Gunakan uploadImage API
         newGambarUrl = uploadResponse.imageUrl;
       }
 
       const updatedNews = { 
         judul, 
-        deskripsi: editor.getHTML(), // Kirim konten HTML dari Tiptap
+        deskripsi: editorContent, // Kirim konten HTML dari TinyMCE
         kategori: finalKategori,
         gambar: newGambarUrl 
       };
       await updateNews(id, updatedNews); 
       
       showMessage('Berita berhasil diperbarui!', 'success');
-      // Panggil ulang fetchCategories setelah update berhasil untuk memperbarui dropdown global
-      fetchCategories(); 
-
+      fetchCategories(); // Panggil ulang untuk memperbarui dropdown kategori global
       navigate('/dashboard'); 
     } catch (err) {
       setError(err.message || 'Gagal memperbarui berita.');
@@ -350,6 +157,44 @@ function NewsEdit() {
       console.error("Error updating news:", err);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Callback untuk penanganan upload gambar di dalam TinyMCE
+  // Fungsi ini akan dipanggil oleh TinyMCE ketika pengguna mencoba menyisipkan gambar
+  const filePickerCallback = (cb, value, meta) => {
+    // Pastikan ini adalah untuk jenis 'image'
+    if (meta.filetype === 'image') {
+      const input = document.createElement('input');
+      input.setAttribute('type', 'file');
+      input.setAttribute('accept', 'image/*'); // Hanya terima file gambar
+
+      input.onchange = async () => {
+        const file = input.files[0];
+        if (file) {
+          showMessage('Mengunggah gambar ke Cloudinary...', 'info');
+          const formData = new FormData();
+          formData.append('image', file); // 'image' adalah nama field yang diharapkan backend
+
+          try {
+            // Panggil fungsi uploadImage Anda untuk mengirim file ke backend/Cloudinary
+            const uploadResponse = await uploadImage(formData); 
+            const imageUrl = uploadResponse.imageUrl; // Dapatkan URL gambar yang diunggah dari respons backend
+
+            if (imageUrl) {
+              cb(imageUrl, { title: file.name }); // Panggil callback TinyMCE dengan URL gambar yang sudah diunggah
+              showMessage('Gambar berhasil diunggah dan disisipkan!', 'success');
+            } else {
+              showMessage('Gagal mendapatkan URL gambar dari Cloudinary.', 'error');
+            }
+          } catch (uploadError) {
+            showMessage('Gagal mengunggah gambar ke Cloudinary.', 'error');
+            console.error('TinyMCE Cloudinary Upload Error:', uploadError);
+          }
+        }
+      };
+
+      input.click(); // Trigger klik pada input file yang tersembunyi
     }
   };
 
@@ -391,10 +236,31 @@ function NewsEdit() {
             <label className="block text-gray-700 text-sm font-bold mb-2">
               Deskripsi:
             </label>
-            {/* Tiptap Toolbar */}
-            <TiptapToolbar editor={editor} />
-            {/* Tiptap Editor */}
-            <EditorContent editor={editor} />
+            {/* Mengganti Tiptap Editor dengan TinyMCE */}
+            <Editor
+              apiKey={tinymceApiKey} // API Key TinyMCE Anda
+              onInit={(evt, editor) => editorRef.current = editor}
+              initialValue={deskripsi} // Set nilai awal dari state deskripsi
+              init={{
+                height: 300,
+                menubar: true, // Menampilkan menu bar seperti Word
+                plugins: [
+                  'advlist autolink lists link image charmap print preview anchor',
+                  'searchreplace visualblocks code fullscreen',
+                  'insertdatetime media table paste code help wordcount'
+                ],
+                toolbar: 
+                  'undo redo | formatselect | ' +
+                  'bold italic backcolor | alignleft aligncenter ' +
+                  'alignright alignjustify | bullist numlist outdent indent | ' +
+                  'removeformat | help',
+                content_style: 'body { font-family:Helvetica,Arial,Arial,sans-serif; font-size:14px }', // Font disesuaikan
+                // Konfigurasi untuk penanganan upload gambar
+                file_picker_types: 'image', // Mengizinkan TinyMCE untuk menampilkan tombol upload gambar
+                file_picker_callback: filePickerCallback // Menghubungkan ke fungsi callback kita
+              }}
+              onEditorChange={(newContent) => setDeskripsi(newContent)}
+            />
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="kategori">
