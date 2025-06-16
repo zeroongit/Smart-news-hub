@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getNewsDetailsByCategoryAndId, showMessage, getNewsByCategory } from '../../services/api'; 
-
+  
 function NewsDetails() {
   const { id, categoryName } = useParams(); 
   const [newsItem, setNewsItem] = useState(null);

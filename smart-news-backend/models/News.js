@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
-const slugify = require('slugify'); // Impor slugify
+const slugify = require('slugify');
 
 const newsSchema = new mongoose.Schema({
   id: {
@@ -23,11 +23,15 @@ const newsSchema = new mongoose.Schema({
   },
   kategori: {
     type: String,
+    default: 'umum'
+  },
+  kategori_nama: {
+    type: String,
     default: 'Umum'
   },
   status: {
     type: String,
-    enum: ['Public', 'Draft', 'Pending', 'ReviewDelete'], // Tambahkan 'ReviewDelete'
+    enum: ['Public', 'Draft', 'Pending', 'ReviewDelete'],
     default: 'Pending'
   },
   deskripsi: {
@@ -35,13 +39,13 @@ const newsSchema = new mongoose.Schema({
     required: true
   },
   gambar: {
-    type: String, // Nama file atau ID unik Google Drive/cloud/local file
+    type: String,
     required: true
   },
   slug: {
     type: String,
     unique: true,
-    index: true // Menambahkan indeks untuk slug
+    index: true
   },
   visitor_count: {
     type: Number,
@@ -57,12 +61,11 @@ const newsSchema = new mongoose.Schema({
   }
 });
 
-// Pre-save hook untuk menghasilkan slug
+// Pre-save hook untuk menghasilkan slug dan slug kategori
 newsSchema.pre('save', async function (next) {
-  if (this.isModified('judul')) { // Hanya generate slug jika judul dimodifikasi
+  // Slug untuk judul
+  if (this.isModified('judul')) {
     let newSlug = slugify(this.judul, { lower: true, strict: true });
-    
-    // Pastikan slug unik
     let counter = 1;
     let originalSlug = newSlug;
     while (await this.constructor.findOne({ slug: newSlug })) {
@@ -71,11 +74,15 @@ newsSchema.pre('save', async function (next) {
     }
     this.slug = newSlug;
   }
-  this.updated_at = Date.now(); // Perbarui updated_at setiap kali dokumen disimpan
+
+  // Slugify kategori dan simpan nama asli
+  if (this.isModified('kategori')) {
+    this.kategori_nama = this.kategori; // simpan nama asli
+    this.kategori = slugify(this.kategori, { lower: true, strict: true });
+  }
+
+  this.updated_at = Date.now();
   next();
 });
-
-// Anda mungkin perlu menambahkan index ke skema News jika belum ada
-// newsSchema.index({ slug: 1 }, { unique: true }); // Pastikan indeks slug_1 ini ada
 
 module.exports = mongoose.model('News', newsSchema);

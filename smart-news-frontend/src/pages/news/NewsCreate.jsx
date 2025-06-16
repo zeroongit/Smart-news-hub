@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createNews, uploadImage, showMessage, getUniqueCategories } from '../../services/api';
 
+
 function NewsCreate() {
   const navigate = useNavigate();
   const [judul, setJudul] = useState('');
