@@ -1,24 +1,9 @@
-// smart-news-frontend/src/components/NewsCard.jsx
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 function NewsCard({ news }) {
-  // Pastikan news.kategori ada dan diubah ke format URL yang aman
-  // BARU: Logika slugification untuk menangani karakter khusus seperti '&'
-  const cleanCategory = news.kategori
-    ? news.kategori.toLowerCase()
-        .replace(/&/g, 'and') // Mengganti '&' dengan 'and'
-        .replace(/\s+/g, '-') // Mengganti spasi dengan strip
-        .replace(/[^a-z0-9-]/g, '') // Menghapus karakter non-alphanumeric kecuali strip
-        .replace(/--+/g, '-') // Menghilangkan strip ganda (jika ada spasi/& berdekatan)
-        .replace(/^-+|-+$/g, '') // Menghilangkan strip di awal atau akhir
-    : 'uncategorized';
-  
-  const categorySlug = cleanCategory;
-  const detailUrl = `/news/${categorySlug}/${news._id}`; // URL yang akan dihasilkan
-
-  console.log(`NewsCard: Generating link for Judul: "${news.judul}", Kategori Asli: "${news.kategori}", Slug Terproses: "${categorySlug}", ID: "${news._id}". Full URL: "${detailUrl}"`);
+  const categorySlug = news.kategori || 'uncategorized';
+  const detailUrl = `/news/${categorySlug}/${news._id}`;
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
@@ -32,7 +17,7 @@ function NewsCard({ news }) {
       )}
       <div className="p-4">
         <span className="text-blue-600 text-xs font-semibold uppercase">
-          {news.kategori || 'Umum'}
+          {news.kategori_nama || 'Umum'}
         </span>
         <h3 className="font-bold text-xl my-2">
           {news.judul}
@@ -46,7 +31,7 @@ function NewsCard({ news }) {
           Status: {news.status}
         </p>
         <Link
-          to={detailUrl} // Menggunakan variabel detailUrl yang sudah di-slug
+          to={detailUrl}
           className="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
         >
           Baca Selengkapnya

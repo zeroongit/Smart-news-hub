@@ -22,8 +22,8 @@ function App() {
         {/* Public Pages */}
         <Route path="/home" element={<Home />} />
         <Route path="/news" element={<Home />} />
-        <Route path="/news/:categoryName/:id" element={<NewsDetails />} />
-        <Route path="/news/:categoryName" element={<Home />} /> 
+        <Route path="/news/:categorySlug/:id" element={<NewsDetails />} />
+        <Route path="/news/:categorySlug" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -53,20 +53,20 @@ function App() {
           }
         />
         <Route
-        path='/news/:categoryName/:id/edit'
-        element={
-          <PrivateRoute>
-            <NewsEdit />
-          </PrivateRoute>
-        }
+          path="/news/:categorySlug/:id/edit"
+          element={
+            <PrivateRoute>
+              <NewsEdit />
+            </PrivateRoute>
+          }
         />
         <Route
-        path='/admin/dashboard'
-        element={
-          <PrivateRoute>
-            <AdminDashboard />
-          </PrivateRoute>
-        }
+          path="/admin/dashboard"
+          element={
+            <PrivateRoute>
+              <AdminDashboard />
+            </PrivateRoute>
+          }
         />
       </Routes>
     </BrowserRouter>

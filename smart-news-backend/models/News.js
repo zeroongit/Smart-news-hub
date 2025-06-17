@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
-const slugify = require('slugify'); // Impor slugify
+const slugify = require('slugify');
 
 const newsSchema = new mongoose.Schema({
   id: {
@@ -22,6 +22,10 @@ const newsSchema = new mongoose.Schema({
     required: true
   },
   kategori: {
+    type: String,
+    default: 'umum'
+  },
+  kategori_nama: {
     type: String,
     default: 'Umum'
   },
@@ -57,21 +61,11 @@ const newsSchema = new mongoose.Schema({
   }
 });
 
-// Pre-save hook untuk menghasilkan slug
+// Pre-save hook untuk menghasilkan slug dan slug kategori
 newsSchema.pre('save', async function (next) {
+  // Slug untuk judul
   if (this.isModified('judul')) {
-    // Standardisasi slugification agar sama dengan frontend NewsCard
-    let cleanJudul = this.judul
-      .toLowerCase()
-      .replace(/&/g, 'and') // Ganti '&' dengan 'and'
-      .replace(/\s+/g, '-') // Ganti spasi dengan strip
-      .replace(/[^a-z0-9-]/g, '') // Hapus karakter non-alphanumeric kecuali strip
-      .replace(/--+/g, '-') // Hilangkan strip ganda
-      .replace(/^-+|-+$/g, ''); // Hilangkan strip di awal atau akhir
-
-    let newSlug = cleanJudul;
-    
-    // Pastikan slug unik
+    let newSlug = slugify(this.judul, { lower: true, strict: true });
     let counter = 1;
     let originalSlug = newSlug;
     while (await this.constructor.findOne({ slug: newSlug })) {
@@ -80,6 +74,13 @@ newsSchema.pre('save', async function (next) {
     }
     this.slug = newSlug;
   }
+
+  // Slugify kategori dan simpan nama asli
+  if (this.isModified('kategori')) {
+    this.kategori_nama = this.kategori; // simpan nama asli untuk tampilan
+    this.kategori = slugify(this.kategori, { lower: true, strict: true }); // simpan slug kategori untuk URL/query
+  }
+
   this.updated_at = Date.now();
   next();
 });
