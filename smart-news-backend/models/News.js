@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
-const slugify = require('slugify');
+const slugify = require('slugify'); // Impor slugify
 
 const newsSchema = new mongoose.Schema({
   id: {
@@ -21,11 +21,11 @@ const newsSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  kategori: {
+  kategori: { // Ini adalah properti yang akan menyimpan slug kategori
     type: String,
-    default: 'umum'
+    default: 'umum' // Default slugified category
   },
-  kategori_nama: {
+  kategori_nama: { // Ini adalah properti untuk menyimpan nama kategori asli (misal: "Ekonomi & Bisnis")
     type: String,
     default: 'Umum'
   },
@@ -61,11 +61,20 @@ const newsSchema = new mongoose.Schema({
   }
 });
 
-// Pre-save hook untuk menghasilkan slug dan slug kategori
+// Pre-save hook untuk menghasilkan slug judul dan slug kategori
 newsSchema.pre('save', async function (next) {
-  // Slug untuk judul
+  // Slug untuk judul (harus konsisten juga jika digunakan di URL)
   if (this.isModified('judul')) {
-    let newSlug = slugify(this.judul, { lower: true, strict: true });
+    let cleanJudul = this.judul
+      .toLowerCase()
+      .replace(/&/g, 'and') // Ganti '&' dengan 'and'
+      .replace(/\s+/g, '-') // Ganti spasi dengan strip
+      .replace(/[^a-z0-9-]/g, '') // Hapus karakter non-alphanumeric kecuali strip
+      .replace(/--+/g, '-') // Hilangkan strip ganda
+      .replace(/^-+|-+$/g, ''); // Hilangkan strip di awal atau akhir
+
+    let newSlug = cleanJudul;
+    
     let counter = 1;
     let originalSlug = newSlug;
     while (await this.constructor.findOne({ slug: newSlug })) {
@@ -75,10 +84,16 @@ newsSchema.pre('save', async function (next) {
     this.slug = newSlug;
   }
 
-  // Slugify kategori dan simpan nama asli
+  // Standardisasi slugifikasi untuk kategori juga
   if (this.isModified('kategori')) {
-    this.kategori_nama = this.kategori; // simpan nama asli
-    this.kategori = slugify(this.kategori, { lower: true, strict: true });
+    this.kategori_nama = this.kategori; // Simpan nama asli kategori sebelum di-slug
+    this.kategori = this.kategori
+      .toLowerCase()
+      .replace(/&/g, 'and') // Ganti '&' dengan 'and' (PENTING: konsisten dengan frontend)
+      .replace(/\s+/g, '-') // Ganti spasi dengan strip
+      .replace(/[^a-z0-9-]/g, '') // Hapus karakter non-alphanumeric kecuali strip
+      .replace(/--+/g, '-') // Hilangkan strip ganda
+      .replace(/^-+|-+$/g, ''); // Hilangkan strip di awal atau akhir
   }
 
   this.updated_at = Date.now();
