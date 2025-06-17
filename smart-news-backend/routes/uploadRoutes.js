@@ -36,8 +36,8 @@ router.post('/image', auth, upload.single('image'), async (req, res) => {
       fileId: response.data.fileId,
     });
   } catch (err) {
-    console.error('Upload ke ImageKit gagal:', err.response?.data || err.message);
-    res.status(500).json({ error: 'Gagal mengunggah gambar.' });
+    console.error('Upload ke ImageKit gagal:', err);
+res.status(500).json({ error: err.response?.data || err.message || 'Upload gagal' });
   }
 });
 
