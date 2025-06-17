@@ -5,7 +5,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'; // Import useNa
 import { getNewsDetailsByCategoryAndId, showMessage, getNewsByCategory } from '../../services/api'; // Path diperbaiki
 
 function NewsDetails() {
-  const { id, categoryName } = useParams(); 
+  const { id, kategori } = useParams(); 
   const navigate = useNavigate(); // Inisialisasi useNavigate
   const [newsItem, setNewsItem] = useState(null);
   const [relatedNews, setRelatedNews] = useState([]);
@@ -18,7 +18,7 @@ function NewsDetails() {
       console.log('NewsDetails Component: Nilai useParams ->', { id, categoryName });
 
       try {
-        const data = await getNewsDetailsByCategoryAndId(categoryName, id);
+        const data = await getNewsDetailsByCategoryAndId(kategori, id);
         setNewsItem(data);
 
         // Fetch related news: menggunakan kategori yang asli dari data berita
@@ -51,7 +51,7 @@ function NewsDetails() {
       showMessage('ID Berita atau Kategori tidak ditemukan di URL.', 'error');
       setLoading(false);
     }
-  }, [id, categoryName, navigate]); // Tambahkan navigate ke dependensi useEffect
+  }, [id, kategori, navigate]); // Tambahkan navigate ke dependensi useEffect
 
   if (loading) {
     return (
