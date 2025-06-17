@@ -13,7 +13,6 @@ const logError = (err, message) => {
 
 // --- Rute Public ---
 
-// GET semua berita publik dengan filter search & kategori
 router.get('/', async (req, res) => {
   try {
     const { search, category } = req.query;
@@ -26,7 +25,7 @@ router.get('/', async (req, res) => {
       ];
     }
     if (category) {
-      query.kategori = category; // langsung pakai slug kategori
+      query.kategori = category;
     }
 
     const news = await News.find(query).sort({ created_at: -1 });
@@ -37,7 +36,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET semua berita berdasarkan kategori (slug)
 router.get('/category/:categorySlug', async (req, res) => {
   try {
     const categorySlug = req.params.categorySlug;
@@ -52,7 +50,6 @@ router.get('/category/:categorySlug', async (req, res) => {
   }
 });
 
-// GET berita tunggal berdasarkan kategori slug dan ID
 router.get('/category/:categorySlug/:id', async (req, res) => {
   try {
     const { categorySlug, id } = req.params;
@@ -74,7 +71,6 @@ router.get('/category/:categorySlug/:id', async (req, res) => {
   }
 });
 
-// GET semua kategori unik dari berita publik
 router.get('/categories', async (req, res) => {
   try {
     const uniqueCategories = await News.distinct('kategori', { status: 'Public' });
@@ -87,7 +83,6 @@ router.get('/categories', async (req, res) => {
 
 // --- Rute Terproteksi: User ---
 
-// POST berita baru
 router.post('/', auth, async (req, res) => {
   try {
     const { judul, deskripsi, gambar, kategori } = req.body;
@@ -96,6 +91,7 @@ router.post('/', auth, async (req, res) => {
       deskripsi,
       gambar,
       kategori: kategori || 'Umum',
+      kategori_nama: kategori || 'Umum',
       user_id: req.user._id,
       penulis: req.user.username,
       status: 'Pending'
@@ -108,7 +104,6 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// PUT update berita (oleh admin/penulis)
 router.put('/:id', auth, async (req, res) => {
   try {
     const { judul, deskripsi, gambar, kategori } = req.body;
@@ -121,6 +116,7 @@ router.put('/:id', auth, async (req, res) => {
     news.deskripsi = deskripsi || news.deskripsi;
     news.gambar = gambar || news.gambar;
     news.kategori = kategori || news.kategori;
+    news.kategori_nama = kategori || news.kategori_nama;
     news.status = 'Pending';
     news.updated_at = Date.now();
     await news.save();
