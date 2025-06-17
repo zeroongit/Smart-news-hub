@@ -25,7 +25,7 @@ router.post('/image', auth, upload.single('image'), async (req, res) => {
       {
         headers: {
           ...form.getHeaders(),
-          Authorization: 'Basic ' + Buffer.from(process.env.IMAGEKIT_PUBLIC_API_KEY + ':').toString('base64')
+          Authorization: 'Basic ' + Buffer.from(process.env.IMAGEKIT_PRIVATE_API_KEY + ':').toString('base64')
         }
       }
     );
