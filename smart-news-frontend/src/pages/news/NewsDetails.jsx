@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom'; // Import useNavigate
-import { getNewsDetailsByCategoryAndId, showMessage, getNewsByCategory } from '../services/api'; // Path diperbaiki
+import { getNewsDetailsByCategoryAndId, showMessage, getNewsByCategory } from '../../services/api'; // Path diperbaiki
 
 function NewsDetails() {
   const { id, categoryName } = useParams(); 
