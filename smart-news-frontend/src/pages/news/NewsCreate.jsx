@@ -37,8 +37,14 @@ function NewsCreate() {
   };
 
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
+  const file = e.target.files[0];
+  if (file && file.size > 10 * 1024 * 1024) {
+    showMessage('Ukuran gambar maksimal 10MB.', 'error');
+    return;
+  }
+  setSelectedFile(file);
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
