@@ -44,7 +44,7 @@ function NewsDetails() {
       }
     };
 
-    if (id && categoryName) {
+    if (id && kategori) {
       fetchDetails();
     } else {
       setError('ID Berita atau Kategori tidak ditemukan di URL.');

@@ -6,6 +6,8 @@ const axios = require('axios');
 const auth = require('../middleware/auth');
 
 const upload = multer({ storage: multer.memoryStorage() });
+console.log("KEY TERBACA DI BACKEND:", process.env.IMAGEKIT_PRIVATE_API_KEY);
+
 
 router.post('/image', auth, upload.single('image'), async (req, res) => {
   const file = req.file;
