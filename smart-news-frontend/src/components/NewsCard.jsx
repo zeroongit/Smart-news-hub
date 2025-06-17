@@ -1,9 +1,13 @@
+// smart-news-frontend/src/components/NewsCard.jsx
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 function NewsCard({ news }) {
-  const categorySlug = news.kategori || 'uncategorized';
-  const detailUrl = `/news/${categorySlug}/${news._id}`;
+  const categorySlug = news.kategori ? news.kategori.toLowerCase().replace(/\s+/g, '-') : 'uncategorized';
+  const detailUrl = `/news/${categorySlug}/${news._id}`; // URL yang akan dihasilkan
+
+
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
@@ -17,7 +21,7 @@ function NewsCard({ news }) {
       )}
       <div className="p-4">
         <span className="text-blue-600 text-xs font-semibold uppercase">
-          {news.kategori_nama || 'Umum'}
+          {news.kategori || 'Umum'}
         </span>
         <h3 className="font-bold text-xl my-2">
           {news.judul}
@@ -31,7 +35,7 @@ function NewsCard({ news }) {
           Status: {news.status}
         </p>
         <Link
-          to={detailUrl}
+          to={detailUrl} // Menggunakan variabel detailUrl
           className="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
         >
           Baca Selengkapnya

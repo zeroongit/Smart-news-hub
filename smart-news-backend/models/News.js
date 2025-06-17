@@ -77,8 +77,8 @@ newsSchema.pre('save', async function (next) {
 
   // Slugify kategori dan simpan nama asli
   if (this.isModified('kategori')) {
-    this.kategori_nama = this.kategori; // simpan nama asli untuk tampilan
-    this.kategori = slugify(this.kategori, { lower: true, strict: true }); // simpan slug kategori untuk URL/query
+    this.kategori_nama = this.kategori; // simpan nama asli
+    this.kategori = slugify(this.kategori, { lower: true, strict: true });
   }
 
   this.updated_at = Date.now();
