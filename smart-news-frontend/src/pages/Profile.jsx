@@ -1,12 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserProfile, updateUserProfile, deleteUserAccount, showMessage, logoutUser } from '../services/api';
 
 function Profile() {
   const navigate = useNavigate();
-  const fileInputRef = useRef();
-  const [showImageOptions, setShowImageOptions] = useState(false);
-
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
@@ -14,7 +11,7 @@ function Profile() {
   const [website, setWebsite] = useState('');
   const [instagram, setInstagram] = useState('');
   const [linkedin, setLinkedin] = useState('');
-
+  const [showImageModal, setShowImageModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,7 +23,7 @@ function Profile() {
         setUsername(data.username);
         setEmail(data.email);
         setBio(data.bio || ''); 
-        setProfilePictureUrl(data.profilePictureUrl || 'https://placehold.co/100x100/cccccc/333333?text=No+Image'); 
+        setProfilePictureUrl(data.profilePictureUrl || ''); 
         setWebsite(data.website || '');
         setInstagram(data.socialMedia?.instagram || ''); 
         setLinkedin(data.socialMedia?.linkedin || ''); 
@@ -83,40 +80,39 @@ function Profile() {
     }
   };
 
-  const handleImageClick = () => {
-    setShowImageOptions(!showImageOptions);
-  };
+  const handleUploadClick = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-  const handleImageUploadClick = () => {
-    fileInputRef.current.click();
-  };
+      const formData = new FormData();
+      formData.append('image', file);
 
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+      try {
+        const res = await fetch('https://api.imgur.com/3/image', {
+          method: 'POST',
+          headers: {
+            Authorization: `Client-ID ${import.meta.env.VITE_IMGUR_CLIENT_ID}`
+          },
+          body: formData
+        });
 
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const res = await fetch("https://api.imgur.com/3/image", {
-        method: "POST",
-        headers: {
-          Authorization: `Client-ID ${import.meta.env.VITE_IMGUR_CLIENT_ID}`,
-        },
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setProfilePictureUrl(data.data.link);
-        showMessage('Foto profil berhasil diunggah!', 'success');
-      } else {
-        throw new Error('Gagal upload gambar ke Imgur');
+        const data = await res.json();
+        if (data.success) {
+          setProfilePictureUrl(data.data.link);
+          showMessage('Foto profil berhasil diunggah!', 'success');
+        } else {
+          throw new Error(data.data.error);
+        }
+      } catch (err) {
+        showMessage(err.message || 'Gagal mengunggah gambar', 'error');
+        console.error('Upload error:', err);
       }
-    } catch (error) {
-      showMessage(error.message, 'error');
-    }
+    };
+    input.click();
   };
 
   if (loading) {
@@ -140,44 +136,32 @@ function Profile() {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl p-8">
         <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">Profil Pengguna</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col items-center mb-6 relative">
+          <div className="flex flex-col items-center mb-6 relative group">
             <img 
-              src={profilePictureUrl} 
+              src={profilePictureUrl || 'https://placehold.co/100x100/cccccc/333333?text=No+Image'} 
               alt="Profil Pengguna" 
               className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow-md cursor-pointer"
-              onClick={handleImageClick}
+              onClick={() => {
+                if (profilePictureUrl) setShowImageModal(true);
+                else handleUploadClick();
+              }}
             />
-            {showImageOptions && (
-              <div className="absolute top-full mt-2 bg-white rounded shadow p-2 w-44 z-50">
-                {!profilePictureUrl || profilePictureUrl.includes('placehold.co') ? (
-                  <button
-                    onClick={handleImageUploadClick}
-                    className="block w-full text-left px-3 py-1 hover:bg-gray-100 text-sm"
-                  >📤 Upload Foto</button>
-                ) : (
-                  <>
-                    <a
-                      href={profilePictureUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block px-3 py-1 hover:bg-gray-100 text-sm text-left"
-                    >👀 Lihat Foto</a>
-                    <button
-                      onClick={handleImageUploadClick}
-                      className="block w-full text-left px-3 py-1 hover:bg-gray-100 text-sm"
-                    >✏️ Ubah Foto</button>
-                  </>
-                )}
-              </div>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
+            <span className="text-sm text-blue-600 mt-2 cursor-pointer" onClick={handleUploadClick}>
+              {profilePictureUrl ? 'Ubah Foto' : 'Upload Foto'}
+            </span>
           </div>
+
+          {showImageModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center" onClick={() => setShowImageModal(false)}>
+              <div className="bg-white p-4 rounded-lg shadow-xl max-w-lg w-full">
+                <img
+                  src={profilePictureUrl}
+                  alt="Preview Foto Profil"
+                  className="w-full h-auto object-contain rounded"
+                />
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block font-semibold text-gray-700 mb-1" htmlFor="username">Username:</label>
