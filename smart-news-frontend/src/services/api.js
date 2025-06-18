@@ -65,14 +65,22 @@ export const registerUser = async (userData) => {
 };
 
 export const loginUser = async (credentials) => {
-  const res = await api.post('/auth/login', credentials);
-  const user = res.data;
+  try {
+    const response = await api.post('/auth/login', credentials);
+    
+    const user = response.data?.user;
 
-  if (user?.token) {
-    localStorage.setItem('user', JSON.stringify(user));
+    if (user && user.token) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      throw new Error("Login response did not contain expected token or user data");
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Error logging in user:', error.response?.data || error.message);
+    throw error.response?.data || error;
   }
-
-  return user;
 };
 
 export const logoutUser = () => {
