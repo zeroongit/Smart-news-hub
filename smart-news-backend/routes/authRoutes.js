@@ -9,6 +9,45 @@ const logError = (err, message) => {
   console.error(`${message}:`, err.message);
 };
 
+const crypto = require('crypto'); // Untuk generate password acak
+
+router.post('/google', async (req, res) => {
+  try {
+    const { email, uid, username } = req.body;
+
+    if (!email || !uid || !username) {
+      return res.status(400).json({ error: 'Data Google tidak lengkap.' });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const randomPassword = crypto.randomBytes(16).toString('hex'); // generate password acak
+      user = new User({
+        email,
+        username,
+        password: randomPassword,
+        role: 'user',
+      });
+      await user.save();
+    }
+
+    const token = user.generateAuthToken();
+    res.json({
+      message: 'Login dengan Google berhasil!',
+      user: {
+        _id: user._id,
+        username: user.username,
+        role: user.role,
+        token,
+      },
+    });
+  } catch (err) {
+    console.error('Google Auth Error:', err);
+    res.status(500).json({ error: 'Terjadi kesalahan saat login dengan Google.' });
+  }
+});
+
 // Rute registrasi pengguna
 router.post('/register', [
   body('username').trim().notEmpty().withMessage('Username tidak boleh kosong.'),
@@ -65,6 +104,5 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Terjadi kesalahan server saat login.' });
   }
 });
-
 
 module.exports = router;
