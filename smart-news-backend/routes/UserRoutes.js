@@ -52,5 +52,18 @@ router.put('/profile', auth, async (req, res) => {
   }
 });
 
+router.delete('/delete', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    await News.deleteMany({ user_id: userId });
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: 'Akun dan semua berita Anda telah dihapus.' });
+  } catch (err) {
+    console.error('Gagal menghapus akun:', err.message);
+    res.status(500).json({ error: 'Terjadi kesalahan saat menghapus akun.' });
+  }
+});
+
 
 module.exports = router;
