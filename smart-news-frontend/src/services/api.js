@@ -82,6 +82,17 @@ export const loginUser = async (credentials) => {
   }
 };
 
+export const deleteUserAccount = async () => {
+  try {
+    const response = await api.delete('/users/delete');
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user account:', error.response?.data || error.message);
+    throw error.response?.data || error;
+  }
+};
+
+
 export const logoutUser = () => {
   try {
     localStorage.removeItem('user');

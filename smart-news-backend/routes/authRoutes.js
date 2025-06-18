@@ -11,7 +11,6 @@ const logError = (err, message) => {
 
 // Rute registrasi pengguna
 router.post('/register', [
-  // Validasi input
   body('username').trim().notEmpty().withMessage('Username tidak boleh kosong.'),
   body('email').isEmail().withMessage('Format email tidak valid.').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password minimal 6 karakter.')
@@ -64,6 +63,19 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     logError(err, 'Gagal login pengguna');
     res.status(500).json({ error: 'Terjadi kesalahan server saat login.' });
+  }
+});
+
+router.delete('/delete', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    await News.deleteMany({ user_id: userId });
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: 'Akun dan semua berita Anda telah dihapus.' });
+  } catch (err) {
+    console.error('Gagal menghapus akun:', err.message);
+    res.status(500).json({ error: 'Terjadi kesalahan saat menghapus akun.' });
   }
 });
 
