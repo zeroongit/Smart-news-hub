@@ -1,13 +1,17 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserProfile, updateUserProfile, showMessage } from '../services/api';
-
 
 function Profile() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [bio, setBio] = useState(''); // State untuk bio
+  const [profilePictureUrl, setProfilePictureUrl] = useState(''); // State untuk URL gambar profil
+  const [website, setWebsite] = useState(''); // State untuk website
+  const [instagram, setInstagram] = useState(''); // State untuk Instagram
+  const [linkedin, setLinkedin] = useState(''); // State untuk LinkedIn
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -15,9 +19,14 @@ function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await getUserProfile(); // Menggunakan fungsi API untuk mengambil profil
+        const data = await getUserProfile(); 
         setUsername(data.username);
         setEmail(data.email);
+        setBio(data.bio || ''); 
+        setProfilePictureUrl(data.profilePictureUrl || 'https://placehold.co/100x100/cccccc/333333?text=No+Image'); 
+        setWebsite(data.website || '');
+        setInstagram(data.socialMedia?.instagram || ''); 
+        setLinkedin(data.socialMedia?.linkedin || ''); 
       } catch (err) {
         setError(err.message || 'Gagal memuat profil pengguna.');
         showMessage(err.message || 'Terjadi kesalahan saat memuat profil.', 'error');
@@ -36,12 +45,20 @@ function Profile() {
     setError(null);
 
     try {
-      const updatedProfile = { username, email };
+      const updatedProfile = {
+        username,
+        email,
+        bio,
+        profilePictureUrl, 
+        website,
+        socialMedia: { 
+          instagram,
+          linkedin
+        }
+      };
       await updateUserProfile(updatedProfile); 
       
       showMessage('Profil berhasil diperbarui!', 'success');
-
-      // navigate('/dashboard'); 
     } catch (err) {
       setError(err.message || 'Gagal memperbarui profil.');
       showMessage(err.message || 'Gagal memperbarui profil.', 'error');
@@ -68,41 +85,119 @@ function Profile() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Profil Pengguna</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-10">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl p-8">
+        <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">Profil Pengguna</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Gambar Profil */}
+          <div className="flex flex-col items-center mb-6">
+            <img 
+              src={profilePictureUrl} 
+              alt="Profil Pengguna" 
+              className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow-md"
+            />
+          </div>
+
+          {/* Username */}
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1" htmlFor="username">
               Username:
             </label>
             <input
               type="text"
               id="username"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+
+          {/* Email */}
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1" htmlFor="email">
               Email:
             </label>
             <input
               type="email"
               id="email"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
-          {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
-          <div className="flex items-center justify-between">
+
+          {/* Bio */}
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1" htmlFor="bio">
+              Bio:
+            </label>
+            <textarea
+              id="bio"
+              rows="3"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm resize-y focus:ring-indigo-500 focus:border-indigo-500"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength="500"
+              placeholder="Ceritakan sedikit tentang diri Anda (maks 500 karakter)"
+            />
+          </div>
+
+          {/* Website */}
+          <div>
+            <label className="block font-semibold text-gray-700 mb-1" htmlFor="website">
+              Website:
+            </label>
+            <input
+              type="url"
+              id="website"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://yourwebsite.com"
+            />
+          </div>
+
+          {/* Social Media */}
+          <div className="space-y-4 pt-2 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-700">Media Sosial</h3>
+            {/* Instagram */}
+            <div>
+              <label className="block font-semibold text-gray-700 mb-1" htmlFor="instagram">
+                Instagram (username):
+              </label>
+              <input
+                type="text"
+                id="instagram"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+                placeholder="misal: john_doe_official"
+              />
+            </div>
+            {/* LinkedIn */}
+            <div>
+              <label className="block font-semibold text-gray-700 mb-1" htmlFor="linkedin">
+                LinkedIn (URL profil):
+              </label>
+              <input
+                type="url"
+                id="linkedin"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                value={linkedin}
+                onChange={(e) => setLinkedin(e.target.value)}
+                placeholder="misal: https://linkedin.com/in/johndoe"
+              />
+            </div>
+          </div>
+
+          {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+
+          <div className="flex justify-between items-center mt-6">
             <button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2 rounded-md shadow transition disabled:opacity-50"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Memperbarui...' : 'Perbarui Profil'}
@@ -110,7 +205,7 @@ function Profile() {
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="inline-block align-baseline font-bold text-sm text-gray-500 hover:text-gray-800"
+              className="text-gray-500 hover:text-gray-800 font-medium"
               disabled={isSubmitting}
             >
               Kembali ke Dashboard
