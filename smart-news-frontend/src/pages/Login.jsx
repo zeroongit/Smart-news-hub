@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, showMessage } from '../services/api'; // Path diperbaiki
+import { loginUser, showMessage } from '../services/api'; 
+import { signInWithGoogle } from '../services/authGoogle';
+
+const handleGoogleLogin = async () => {
+  try {
+    const userData = await signInWithGoogle();
+    localStorage.setItem('user', JSON.stringify(userData));
+    showMessage('Login dengan Google berhasil!', 'success');
+    navigate('/dashboard');
+  } catch (err) {
+    showMessage('Gagal login dengan Google', 'error');
+  }
+};
+
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -13,7 +26,7 @@ function Login() {
     setError(null);
     try {
       const response = await loginUser({ email, password }); 
-      console.log('Login successful response from backend:', response); // Debugging: lihat respons dari backend
+      console.log('Login successful response from backend:', response); 
 
       const user = response.user;
 
@@ -79,6 +92,11 @@ function Login() {
             >
               Login
             </button>
+            <button onClick={handleGoogleLogin} className="bg-white border flex items-center gap-2 text-black font-medium px-4 py-2 rounded-md shadow-md hover:shadow-lg transition">
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="google" className="w-5 h-5" />
+              Masuk dengan Google
+            </button>
+
             <button
               type="button"
               onClick={() => navigate('/register')}
