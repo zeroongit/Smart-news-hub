@@ -1,45 +1,31 @@
+// smart-news-backend/routes/uploadRoutes.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const FormData = require('form-data');
 const axios = require('axios');
-const auth = require('../middleware/auth');
+require('dotenv').config();
 
 const upload = multer({ storage: multer.memoryStorage() });
-console.log("KEY TERBACA DI BACKEND:", process.env.IMAGEKIT_PRIVATE_API_KEY);
 
-
-router.post('/image', auth, upload.single('image'), async (req, res) => {
-  const file = req.file;
-
-  if (!file) {
-    return res.status(400).json({ error: 'Tidak ada file gambar yang diunggah.' });
-  }
-
+router.post('/image', upload.single('image'), async (req, res) => {
   try {
-    const form = new FormData();
-    form.append('file', file.buffer, file.originalname);
-    form.append('fileName', file.originalname);
+    if (!req.file) return res.status(400).json({ error: 'No image uploaded.' });
 
-    const response = await axios.post(
-      process.env.IMAGEKIT_URL || 'https://upload.imagekit.io/api/v1/files/upload',
-      form,
-      {
-        headers: {
-          ...form.getHeaders(),
-          Authorization: 'Basic ' + Buffer.from(process.env.IMAGEKIT_PRIVATE_API_KEY + ':').toString('base64')
-        }
+    const base64Image = req.file.buffer.toString('base64');
+    const response = await axios.post('https://api.imgur.com/3/image', {
+      image: base64Image,
+      type: 'base64'
+    }, {
+      headers: {
+        Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}`
       }
-    );
-
-    res.status(200).json({
-      message: 'Gambar berhasil diunggah ke ImageKit!',
-      imageUrl: response.data.url,
-      fileId: response.data.fileId,
     });
-  } catch (err) {
-    console.error('Upload ke ImageKit gagal:', err);
-res.status(500).json({ error: err.response?.data || err.message || 'Upload gagal' });
+
+    const imageUrl = response.data.data.link;
+    res.json({ imageUrl });
+  } catch (error) {
+    console.error('Imgur upload failed:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Gagal mengunggah gambar ke Imgur.' });
   }
 });
 
