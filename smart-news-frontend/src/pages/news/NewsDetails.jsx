@@ -15,7 +15,7 @@ function NewsDetails() {
   useEffect(() => {
     const fetchDetails = async () => {
       // DEBUGGING: Log nilai langsung dari useParams
-      console.log('NewsDetails Component: Nilai useParams ->', { id, categoryName });
+      console.log('NewsDetails Component: Nilai useParams ->', { id, kategori });
 
       try {
         const data = await getNewsDetailsByCategoryAndId(kategori, id);

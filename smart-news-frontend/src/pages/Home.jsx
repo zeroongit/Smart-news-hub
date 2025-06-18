@@ -8,12 +8,12 @@ import { Link, useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 function Home() {
-  const { categoryName } = useParams(); 
+  const { kategori } = useParams(); 
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(categoryName || ''); 
+  const [selectedCategory, setSelectedCategory] = useState(kategori || ''); 
   const [availableCategories, setAvailableCategories] = useState([]); // State untuk kategori dinamis
 
   // Fungsi untuk mengambil kategori unik dari backend
@@ -36,8 +36,8 @@ function Home() {
   }, []); // Hanya berjalan sekali saat mount
 
   useEffect(() => {
-    setSelectedCategory(categoryName || ''); 
-  }, [categoryName]);
+    setSelectedCategory(kategori || ''); 
+  }, [kategori]);
 
   useEffect(() => {
     const fetchNews = async () => {
