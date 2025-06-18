@@ -9,10 +9,10 @@ function Navbar() {
   const handleLogout = () => {
     const result = logoutUser(); 
     if (result.success) {
-      showMessage(result.message, 'success'); // Tampilkan pesan sukses
-      navigate('/home'); // Arahkan ke halaman Home setelah logout
+      showMessage(result.message, 'success'); 
+      navigate('/home'); 
     } else {
-      showMessage(result.message, 'error'); // Tampilkan pesan error
+      showMessage(result.message, 'error'); 
       console.error(result.message);
     }
   };
@@ -35,7 +35,7 @@ function Navbar() {
               <Link to="/profile" className="mr-4 hover:text-gray-300">
                 Profil
               </Link>
-              {user.role === 'admin' && ( // Tampilkan link Admin Dashboard hanya jika role adalah admin
+              {user.role === 'admin' && ( 
                 <Link to="/admin/dashboard" className="mr-4 hover:text-gray-300">
                   Admin Dashboard
                 </Link>

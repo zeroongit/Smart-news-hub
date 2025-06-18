@@ -1,5 +1,3 @@
-// smart-news-frontend/src/pages/Login.jsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, showMessage } from '../services/api'; // Path diperbaiki
@@ -30,13 +28,10 @@ function Login() {
 
 
       showMessage(response.message || 'Login berhasil!', 'success'); 
-      
-      // Memberikan sedikit waktu untuk localStorage untuk benar-benar sinkron
-      // dan untuk React merender ulang sebelum navigasi
       setTimeout(() => {
         console.log('Attempting to navigate to dashboard based on role...');
         navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard'); 
-      }, 50); // Delay singkat (50ms)
+      }, 50); 
 
     } catch (err) {
       setError(err.message || 'Login gagal. Silakan coba lagi.'); 

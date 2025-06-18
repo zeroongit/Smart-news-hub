@@ -61,7 +61,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
       setIsLoading(false);
       setTimeout(() => {
         onLoadingComplete?.();
-        navigate('/home'); // Langsung ke /home setelah welcome screen selesai
+        navigate('/home'); 
       }, 1000);
     }, 4000);
 
@@ -147,7 +147,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
               >
                 <a
                   href="#"
-                  onClick={() => navigate('/home')} // Langsung menuju /home
+                  onClick={() => navigate('/home')} 
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full relative group hover:scale-105 transition-transform duration-300"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-sky-700/20 to-blue-800/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300" />

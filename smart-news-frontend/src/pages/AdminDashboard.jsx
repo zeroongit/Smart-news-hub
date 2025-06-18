@@ -28,8 +28,6 @@ function AdminDashboard() {
   }, []);
 
   const handleDelete = async (id) => {
-    // Karena window.confirm tidak direkomendasikan, ini adalah placeholder.
-    // Di produksi, Anda harus membuat modal konfirmasi kustom.
     if (window.confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
       try {
         await deleteNews(id);

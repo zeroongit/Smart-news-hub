@@ -1,11 +1,8 @@
-// smart-news-frontend/src/pages/Dashboard.jsx
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-// Mengimpor fungsi API yang dibutuhkan untuk mengambil berita user, edit, dan minta hapus
 import { getNewsByUserId, requestDeleteNews, showMessage } from '../services/api';
-import NewsCard from '../components/NewsCard'; // Untuk menampilkan ringkasan berita
+import NewsCard from '../components/NewsCard';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -14,7 +11,7 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const user = JSON.parse(localStorage.getItem('user'));
     const username = user ? user.username : 'Pengguna';
-    const userId = user ? user._id : null; // Dapatkan ID pengguna dari token/local storage
+    const userId = user ? user._id : null; 
 
     useEffect(() => {
         const fetchUserNews = async () => {
@@ -22,7 +19,7 @@ const Dashboard = () => {
                 setError('Pengguna tidak terautentikasi.');
                 showMessage('Anda tidak memiliki akses. Silakan login.', 'error');
                 setLoading(false);
-                navigate('/login'); // Arahkan ke login jika tidak ada user ID
+                navigate('/login'); 
                 return;
             }
 
@@ -36,7 +33,6 @@ const Dashboard = () => {
                 showMessage(err.message || 'Terjadi kesalahan saat memuat artikel Anda.', 'error');
                 console.error("Error fetching user news:", err);
 
-                // Tangani kasus token tidak valid atau izin
                 if (err.response && (err.response.status === 401 || err.response.status === 403)) {
                     showMessage('Sesi Anda telah berakhir atau Anda tidak memiliki izin. Silakan login kembali.', 'error');
                     localStorage.removeItem('user');
@@ -48,10 +44,9 @@ const Dashboard = () => {
         };
 
         fetchUserNews();
-    }, [userId, navigate]); // Dependensi pada userId dan navigate
+    }, [userId, navigate]); 
 
     const handleEdit = (newsItem) => {
-        // Asumsi rute edit adalah /news/:categoryName/:id/edit
         const categorySlug = newsItem.kategori ? newsItem.kategori.toLowerCase().replace(/\s+/g, '-') : 'uncategorized';
         navigate(`/news/${categorySlug}/${newsItem._id}/edit`);
     };
@@ -61,7 +56,7 @@ const Dashboard = () => {
             try {
                 await requestDeleteNews(id);
                 showMessage('Permintaan penghapusan telah diajukan kepada admin!', 'success');
-                fetchUserNews(); // Muat ulang daftar berita setelah permintaan
+                fetchUserNews(); 
             } catch (err) {
                 showMessage(err.message || 'Gagal mengajukan permintaan penghapusan.', 'error');
                 console.error("Error requesting delete news:", err);

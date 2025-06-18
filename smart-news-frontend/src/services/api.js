@@ -7,7 +7,6 @@ if (!API_BASE_URL) {
   console.error('API_BASE_URL is not defined! Periksa Vercel Environment Variables dan .env file.');
 }
 
-// Axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -15,7 +14,7 @@ const api = axios.create({
   },
 });
 
-// Interceptor: tambahkan token dari localStorage ke header Authorization
+
 api.interceptors.request.use(
   (config) => {
     try {
@@ -156,7 +155,7 @@ export const getAllNewsForAdmin = async () => {
 };
 
 // ==========================
-// ==== UPLOAD (ImageKit) ====
+// ==== UPLOAD IMAGE ====
 // ==========================
 
 export const uploadImage = async (formData) => {

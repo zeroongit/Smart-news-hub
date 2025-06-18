@@ -1,11 +1,9 @@
-// smart-news-frontend/src/components/NewsCard.jsx
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 function NewsCard({ news }) {
   const categorySlug = news.kategori ? news.kategori.toLowerCase().replace(/\s+/g, '-') : 'uncategorized';
-  const detailUrl = `/news/${categorySlug}/${news._id}`; // URL yang akan dihasilkan
+  const detailUrl = `/news/${categorySlug}/${news._id}`; 
 
 
 
@@ -35,7 +33,7 @@ function NewsCard({ news }) {
           Status: {news.status}
         </p>
         <Link
-          to={detailUrl} // Menggunakan variabel detailUrl
+          to={detailUrl}
           className="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition duration-200"
         >
           Baca Selengkapnya

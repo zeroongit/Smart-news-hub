@@ -1,8 +1,6 @@
-// smart-news-backend/models/News.js
-
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
-const slugify = require('slugify'); // Impor slugify
+const slugify = require('slugify'); 
 
 const newsSchema = new mongoose.Schema({
   id: {
@@ -21,11 +19,11 @@ const newsSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  kategori: { // Ini adalah properti yang akan menyimpan slug kategori
+  kategori: { 
     type: String,
-    default: 'umum' // Default slugified category
+    default: 'umum' 
   },
-  kategori_nama: { // Ini adalah properti untuk menyimpan nama kategori asli (misal: "Ekonomi & Bisnis")
+  kategori_nama: { 
     type: String,
     default: 'Umum'
   },
@@ -61,17 +59,16 @@ const newsSchema = new mongoose.Schema({
   }
 });
 
-// Pre-save hook untuk menghasilkan slug judul dan slug kategori
+
 newsSchema.pre('save', async function (next) {
-  // Slug untuk judul (harus konsisten juga jika digunakan di URL)
   if (this.isModified('judul')) {
     let cleanJudul = this.judul
       .toLowerCase()
-      .replace(/&/g, 'and') // Ganti '&' dengan 'and'
-      .replace(/\s+/g, '-') // Ganti spasi dengan strip
-      .replace(/[^a-z0-9-]/g, '') // Hapus karakter non-alphanumeric kecuali strip
-      .replace(/--+/g, '-') // Hilangkan strip ganda
-      .replace(/^-+|-+$/g, ''); // Hilangkan strip di awal atau akhir
+      .replace(/&/g, 'and')
+      .replace(/\s+/g, '-') 
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/--+/g, '-') 
+      .replace(/^-+|-+$/g, '')
 
     let newSlug = cleanJudul;
     
@@ -84,16 +81,16 @@ newsSchema.pre('save', async function (next) {
     this.slug = newSlug;
   }
 
-  // Standardisasi slugifikasi untuk kategori juga
+
   if (this.isModified('kategori')) {
-    this.kategori_nama = this.kategori; // Simpan nama asli kategori sebelum di-slug
+    this.kategori_nama = this.kategori;
     this.kategori = this.kategori
       .toLowerCase()
-      .replace(/&/g, 'and') // Ganti '&' dengan 'and' (PENTING: konsisten dengan frontend)
-      .replace(/\s+/g, '-') // Ganti spasi dengan strip
-      .replace(/[^a-z0-9-]/g, '') // Hapus karakter non-alphanumeric kecuali strip
-      .replace(/--+/g, '-') // Hilangkan strip ganda
-      .replace(/^-+|-+$/g, ''); // Hilangkan strip di awal atau akhir
+      .replace(/&/g, 'and') 
+      .replace(/\s+/g, '-') 
+      .replace(/[^a-z0-9-]/g, '') 
+      .replace(/--+/g, '-') 
+      .replace(/^-+|-+$/g, ''); 
   }
 
   this.updated_at = Date.now();

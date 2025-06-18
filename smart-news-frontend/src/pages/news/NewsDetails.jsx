@@ -1,12 +1,10 @@
-// smart-news-frontend/src/pages/news/NewsDetails.jsx
-
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'; // Import useNavigate
-import { getNewsDetailsByCategoryAndId, showMessage, getNewsByCategory } from '../../services/api'; // Path diperbaiki
+import { useParams, Link, useNavigate } from 'react-router-dom'; 
+import { getNewsDetailsByCategoryAndId, showMessage, getNewsByCategory } from '../../services/api'; 
 
 function NewsDetails() {
   const { id, kategori } = useParams(); 
-  const navigate = useNavigate(); // Inisialisasi useNavigate
+  const navigate = useNavigate(); 
   const [newsItem, setNewsItem] = useState(null);
   const [relatedNews, setRelatedNews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,26 +12,21 @@ function NewsDetails() {
 
   useEffect(() => {
     const fetchDetails = async () => {
-      // DEBUGGING: Log nilai langsung dari useParams
-      console.log('NewsDetails Component: Nilai useParams ->', { id, kategori });
 
       try {
         const data = await getNewsDetailsByCategoryAndId(kategori, id);
         setNewsItem(data);
 
-        // Fetch related news: menggunakan kategori yang asli dari data berita
-        const related = await getNewsByCategory(data.kategori); // Gunakan slug kategori dari berita yang sedang dilihat
-        // Filter berita terkait agar tidak menyertakan berita yang sedang dilihat
-        // dan ambil maksimal 5 berita
+        const related = await getNewsByCategory(data.kategori);
         const filtered = related.filter(item => item._id !== id).slice(0, 5);
         setRelatedNews(filtered);
 
       } catch (err) {
         setError(err.message || 'Gagal memuat detail berita.');
         showMessage(err.message || 'Terjadi kesalahan saat memuat detail berita.', 'error');
-        console.error(`Error fetching news details for ID ${id} (category: ${categoryName}):`, err);
+        console.error(`Error fetching news details for ID ${id} (category: ${kategori}):`, err);
         
-        // Arahkan ke halaman home jika ada error 404 atau 403 saat fetching detail
+
         if (err.response && (err.response.status === 404 || err.response.status === 403)) {
             showMessage('Berita tidak ditemukan atau Anda tidak memiliki akses.', 'error');
             navigate('/home'); 
@@ -51,7 +44,7 @@ function NewsDetails() {
       showMessage('ID Berita atau Kategori tidak ditemukan di URL.', 'error');
       setLoading(false);
     }
-  }, [id, kategori, navigate]); // Tambahkan navigate ke dependensi useEffect
+  }, [id, kategori, navigate]);
 
   if (loading) {
     return (
@@ -77,17 +70,6 @@ function NewsDetails() {
     );
   }
 
-  // Fungsi helper untuk menghasilkan slug kategori yang konsisten dengan NewsCard dan News model
-  const generateCategorySlug = (categoryName) => {
-    return categoryName
-      ? categoryName.toLowerCase()
-          .replace(/&/g, 'and') 
-          .replace(/\s+/g, '-')
-          .replace(/[^a-z0-9-]/g, '')
-          .replace(/--+/g, '-')
-          .replace(/^-+|-+$/g, '')
-      : 'uncategorized';
-  };
 
   return (
     <div className="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-4 gap-8">

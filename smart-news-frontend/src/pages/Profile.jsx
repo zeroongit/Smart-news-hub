@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserProfile, updateUserProfile, showMessage } from '../services/api';
+import { getUserProfile, updateUserProfile, deleteUserAccount, showMessage, logoutUser } from '../services/api';
 
 function Profile() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [bio, setBio] = useState(''); // State untuk bio
-  const [profilePictureUrl, setProfilePictureUrl] = useState(''); // State untuk URL gambar profil
-  const [website, setWebsite] = useState(''); // State untuk website
-  const [instagram, setInstagram] = useState(''); // State untuk Instagram
-  const [linkedin, setLinkedin] = useState(''); // State untuk LinkedIn
+  const [bio, setBio] = useState('');
+  const [profilePictureUrl, setProfilePictureUrl] = useState('');
+  const [website, setWebsite] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [linkedin, setLinkedin] = useState('');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,7 +57,6 @@ function Profile() {
         }
       };
       await updateUserProfile(updatedProfile); 
-      
       showMessage('Profil berhasil diperbarui!', 'success');
     } catch (err) {
       setError(err.message || 'Gagal memperbarui profil.');
@@ -65,6 +64,19 @@ function Profile() {
       console.error('Error updating profile:', err);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus akun ini secara permanen?')) return;
+    try {
+      await deleteUserAccount();
+      logoutUser();
+      showMessage('Akun Anda berhasil dihapus.', 'success');
+      navigate('/');
+    } catch (err) {
+      showMessage(err.message || 'Gagal menghapus akun.', 'error');
+      console.error('Error deleting account:', err);
     }
   };
 
@@ -89,7 +101,6 @@ function Profile() {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl p-8">
         <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">Profil Pengguna</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Gambar Profil */}
           <div className="flex flex-col items-center mb-6">
             <img 
               src={profilePictureUrl} 
@@ -98,11 +109,8 @@ function Profile() {
             />
           </div>
 
-          {/* Username */}
           <div>
-            <label className="block font-semibold text-gray-700 mb-1" htmlFor="username">
-              Username:
-            </label>
+            <label className="block font-semibold text-gray-700 mb-1" htmlFor="username">Username:</label>
             <input
               type="text"
               id="username"
@@ -113,11 +121,8 @@ function Profile() {
             />
           </div>
 
-          {/* Email */}
           <div>
-            <label className="block font-semibold text-gray-700 mb-1" htmlFor="email">
-              Email:
-            </label>
+            <label className="block font-semibold text-gray-700 mb-1" htmlFor="email">Email:</label>
             <input
               type="email"
               id="email"
@@ -128,11 +133,8 @@ function Profile() {
             />
           </div>
 
-          {/* Bio */}
           <div>
-            <label className="block font-semibold text-gray-700 mb-1" htmlFor="bio">
-              Bio:
-            </label>
+            <label className="block font-semibold text-gray-700 mb-1" htmlFor="bio">Bio:</label>
             <textarea
               id="bio"
               rows="3"
@@ -144,11 +146,8 @@ function Profile() {
             />
           </div>
 
-          {/* Website */}
           <div>
-            <label className="block font-semibold text-gray-700 mb-1" htmlFor="website">
-              Website:
-            </label>
+            <label className="block font-semibold text-gray-700 mb-1" htmlFor="website">Website:</label>
             <input
               type="url"
               id="website"
@@ -159,14 +158,10 @@ function Profile() {
             />
           </div>
 
-          {/* Social Media */}
           <div className="space-y-4 pt-2 border-t border-gray-200">
             <h3 className="text-lg font-semibold text-gray-700">Media Sosial</h3>
-            {/* Instagram */}
             <div>
-              <label className="block font-semibold text-gray-700 mb-1" htmlFor="instagram">
-                Instagram (username):
-              </label>
+              <label className="block font-semibold text-gray-700 mb-1" htmlFor="instagram">Instagram (username):</label>
               <input
                 type="text"
                 id="instagram"
@@ -176,11 +171,8 @@ function Profile() {
                 placeholder="misal: john_doe_official"
               />
             </div>
-            {/* LinkedIn */}
             <div>
-              <label className="block font-semibold text-gray-700 mb-1" htmlFor="linkedin">
-                LinkedIn (URL profil):
-              </label>
+              <label className="block font-semibold text-gray-700 mb-1" htmlFor="linkedin">LinkedIn (URL profil):</label>
               <input
                 type="url"
                 id="linkedin"
@@ -201,6 +193,14 @@ function Profile() {
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Memperbarui...' : 'Perbarui Profil'}
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              className="text-red-500 hover:text-red-700 font-medium"
+              disabled={isSubmitting}
+            >
+              Hapus Akun
             </button>
             <button
               type="button"
