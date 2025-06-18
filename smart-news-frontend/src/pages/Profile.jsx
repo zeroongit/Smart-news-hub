@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserProfile, updateUserProfile, deleteUserAccount, showMessage, logoutUser } from '../services/api';
 
 function Profile() {
   const navigate = useNavigate();
+  const fileInputRef = useRef();
+  const [showImageOptions, setShowImageOptions] = useState(false);
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
@@ -80,6 +83,42 @@ function Profile() {
     }
   };
 
+  const handleImageClick = () => {
+    setShowImageOptions(!showImageOptions);
+  };
+
+  const handleImageUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await fetch("https://api.imgur.com/3/image", {
+        method: "POST",
+        headers: {
+          Authorization: `Client-ID ${import.meta.env.VITE_IMGUR_CLIENT_ID}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setProfilePictureUrl(data.data.link);
+        showMessage('Foto profil berhasil diunggah!', 'success');
+      } else {
+        throw new Error('Gagal upload gambar ke Imgur');
+      }
+    } catch (error) {
+      showMessage(error.message, 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -101,11 +140,42 @@ function Profile() {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl p-8">
         <h2 className="text-3xl font-bold text-center text-indigo-700 mb-6">Profil Pengguna</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col items-center mb-6">
+          <div className="flex flex-col items-center mb-6 relative">
             <img 
               src={profilePictureUrl} 
               alt="Profil Pengguna" 
-              className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow-md"
+              className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow-md cursor-pointer"
+              onClick={handleImageClick}
+            />
+            {showImageOptions && (
+              <div className="absolute top-full mt-2 bg-white rounded shadow p-2 w-44 z-50">
+                {!profilePictureUrl || profilePictureUrl.includes('placehold.co') ? (
+                  <button
+                    onClick={handleImageUploadClick}
+                    className="block w-full text-left px-3 py-1 hover:bg-gray-100 text-sm"
+                  >📤 Upload Foto</button>
+                ) : (
+                  <>
+                    <a
+                      href={profilePictureUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block px-3 py-1 hover:bg-gray-100 text-sm text-left"
+                    >👀 Lihat Foto</a>
+                    <button
+                      onClick={handleImageUploadClick}
+                      className="block w-full text-left px-3 py-1 hover:bg-gray-100 text-sm"
+                    >✏️ Ubah Foto</button>
+                  </>
+                )}
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
             />
           </div>
 
