@@ -2,54 +2,71 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, showMessage } from '../services/api'; 
 import { signInWithGoogle } from '../services/authGoogle';
-
-const handleGoogleLogin = async () => {
-  try {
-    const userData = await signInWithGoogle();
-    localStorage.setItem('user', JSON.stringify(userData));
-    showMessage('Login dengan Google berhasil!', 'success');
-    navigate('/dashboard');
-  } catch (err) {
-    showMessage('Gagal login dengan Google', 'error');
-  }
-};
-
+import api from '../services/api'; 
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
     try {
       const response = await loginUser({ email, password }); 
       console.log('Login successful response from backend:', response); 
 
-      const user = response.user;
-
+      const user = response.user || response;
       if (user && user.token && user.username && user._id) {
         localStorage.setItem('user', JSON.stringify(user));
-        console.log('User data successfully saved to localStorage!');
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        console.log('User data retrieved immediately from localStorage:', storedUser);
+        showMessage(response.message || 'Login berhasil!', 'success'); 
+
+        setTimeout(() => {
+          navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard'); 
+        }, 50);
       } else {
+        showMessage('Login berhasil, tapi data tidak lengkap.', 'warning');
         console.warn('Login response did not contain expected token or user data:', response);
       }
-
-
-      showMessage(response.message || 'Login berhasil!', 'success'); 
-      setTimeout(() => {
-        console.log('Attempting to navigate to dashboard based on role...');
-        navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard'); 
-      }, 50); 
-
     } catch (err) {
       setError(err.message || 'Login gagal. Silakan coba lagi.'); 
       showMessage(err.message || 'Login gagal. Silakan coba lagi.', 'error');
       console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const firebaseUser = await signInWithGoogle();
+      const googleUser = firebaseUser.user;
+
+      if (!googleUser.email || !googleUser.uid) {
+        showMessage('Data dari Google tidak lengkap.', 'error');
+        return;
+      }
+
+      const response = await api.post('/auth/google', {
+        email: googleUser.email,
+        uid: googleUser.uid,
+        username: googleUser.displayName || googleUser.email.split('@')[0],
+      });
+
+      const user = response.data?.user || response.data;
+      if (user && user.token) {
+        localStorage.setItem('user', JSON.stringify(user));
+        showMessage('Login dengan Google berhasil!', 'success');
+        navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+      } else {
+        showMessage('Login Google gagal: token tidak diterima.', 'error');
+      }
+    } catch (err) {
+      console.error('Google Sign-in error:', err);
+      showMessage('Gagal login dengan Google', 'error');
     }
   };
 
@@ -85,18 +102,22 @@ function Login() {
             />
           </div>
           {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3">
             <button
               type="submit"
+              disabled={isLoading}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
-              Login
+              {isLoading ? 'Memuat...' : 'Login'}
             </button>
-            <button onClick={handleGoogleLogin} className="bg-white border flex items-center gap-2 text-black font-medium px-4 py-2 rounded-md shadow-md hover:shadow-lg transition">
+            <button 
+              type="button"
+              onClick={handleGoogleLogin}
+              className="bg-white border flex justify-center items-center gap-2 text-black font-medium px-4 py-2 rounded-md shadow-md hover:shadow-lg transition"
+            >
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="google" className="w-5 h-5" />
               Masuk dengan Google
             </button>
-
             <button
               type="button"
               onClick={() => navigate('/register')}
