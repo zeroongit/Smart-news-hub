@@ -224,3 +224,5 @@ export const showMessage = (message, type = 'success') => {
     messageBox.addEventListener('transitionend', () => messageBox.remove());
   }, 3000);
 };
+
+export default api;
