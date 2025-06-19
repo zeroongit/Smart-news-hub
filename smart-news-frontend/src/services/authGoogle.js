@@ -4,7 +4,7 @@ import { auth, provider } from './firebaseConfig';
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, provider);
-    return result; // ✅ result harus mengandung result.user
+    return result;
   } catch (error) {
     console.error('Firebase signInWithGoogle failed:', error);
     throw error;

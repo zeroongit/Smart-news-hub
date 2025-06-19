@@ -42,6 +42,8 @@ function Login() {
   const handleGoogleLogin = async () => {
     try {
       const firebaseResult = await signInWithGoogle();
+      console.log("Hasil Google login:", firebaseResult);
+
       const googleUser = firebaseResult?.user;
 
       if (!googleUser || !googleUser.email || !googleUser.uid) {
