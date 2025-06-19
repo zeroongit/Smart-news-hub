@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, showMessage } from '../services/api'; 
 import { signInWithGoogle } from '../services/authGoogle';
-import api from '../services/api'; 
 
 function Login() {
   const [email, setEmail] = useState('');
