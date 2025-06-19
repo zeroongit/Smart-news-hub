@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User'); 
 const auth = require('../middleware/auth');
+const news = require('../models/News');
 
 const logError = (err, message) => {
   console.error(`${message}:`, err.message);
