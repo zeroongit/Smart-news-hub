@@ -225,4 +225,4 @@ export const showMessage = (message, type = 'success') => {
   }, 3000);
 };
 
-export default api;
+export { api };
