@@ -1,33 +1,38 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import WelcomeScreen from './components/WelcomeScreen';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import WelcomeScreen from './pages/WelcomeScreen';
+import Home from './pages/Home';
+import NewsDetails from './pages/news/NewsDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
-import NewsDetails from './pages/news/NewsDetails';
 import NewsCreate from './pages/news/NewsCreate';
-import Profile from './pages/Profile';
 import NewsEdit from './pages/news/NewsEdit';
+import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import PrivateRoute from './components/PrivateRoute';
-import AdminDashboard from './pages/AdminDashboard';
+import ParticlesBackground from './components/ParticlesBackground'; 
 
-function App() {
+function AppWrapper() {
+  const location = useLocation();
+
+  // Jangan tampilkan partikel di halaman Welcome
+  const hideParticles = location.pathname === '/';
+
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Splash / Welcome */}
-        <Route path="/" element={<WelcomeScreen />} />
+    <>
+      {!hideParticles && <ParticlesBackground />}
 
-        {/* Public Pages */}
+      <Routes>
+        <Route path="/" element={<WelcomeScreen />} />
         <Route path="/home" element={<Home />} />
         <Route path="/news" element={<Home />} />
         <Route path="/news/:kategori/:id" element={<NewsDetails />} />
         <Route path="/news/:kategori" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* Protected Pages */}
+        
+        {/* Protected */}
         <Route
           path="/news/create"
           element={
@@ -69,8 +74,14 @@ function App() {
           }
         />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppWrapper />
+    </BrowserRouter>
+  );
+}
