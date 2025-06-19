@@ -40,35 +40,42 @@ function Login() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const firebaseUser = await signInWithGoogle();
-      const googleUser = firebaseUser.user;
+const handleGoogleLogin = async () => {
+  try {
+    const firebaseUser = await signInWithGoogle();
+    const googleUser = firebaseUser.user;
 
-      if (!googleUser.email || !googleUser.uid) {
-        showMessage('Data dari Google tidak lengkap.', 'error');
-        return;
-      }
-
-      const response = await api.post('/auth/google', {
-        email: googleUser.email,
-        uid: googleUser.uid,
-        username: googleUser.displayName || googleUser.email.split('@')[0],
-      });
-
-      const user = response.data?.user || response.data;
-      if (user && user.token) {
-        localStorage.setItem('user', JSON.stringify(user));
-        showMessage('Login dengan Google berhasil!', 'success');
-        navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
-      } else {
-        showMessage('Login Google gagal: token tidak diterima.', 'error');
-      }
-    } catch (err) {
-      console.error('Google Sign-in error:', err);
-      showMessage('Gagal login dengan Google', 'error');
+    if (!googleUser.email || !googleUser.uid) {
+      showMessage('Data dari Google tidak lengkap.', 'error');
+      return;
     }
-  };
+
+    const response = await api.post('/auth/google', {
+      email: googleUser.email,
+      uid: googleUser.uid,
+      username: googleUser.displayName || googleUser.email.split('@')[0],
+    });
+
+    const user = response.data?.user || response.data;
+    if (user && user.token) {
+      localStorage.setItem('user', JSON.stringify({
+        _id: user._id,
+        username: user.username,
+        role: user.role,
+        token: user.token
+      }));
+
+      showMessage('Login dengan Google berhasil!', 'success');
+      navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+    } else {
+      showMessage('Login Google gagal: token tidak diterima.', 'error');
+    }
+  } catch (err) {
+    console.error('Google Sign-in error:', err);
+    showMessage('Gagal login dengan Google', 'error');
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
