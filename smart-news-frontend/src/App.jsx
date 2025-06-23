@@ -15,8 +15,6 @@ import ParticlesBackground from './components/ParticlesBackground';
 
 function AppWrapper() {
   const location = useLocation();
-
-  // Jangan tampilkan partikel di halaman Welcome
   const hideParticles = location.pathname === '/';
 
   return (

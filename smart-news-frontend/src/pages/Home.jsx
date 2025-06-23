@@ -1,11 +1,9 @@
-// smart-news-frontend/src/pages/Home.jsx
-
 import React, { useEffect, useState } from 'react';
-// Mengimpor fungsi API yang dibutuhkan, termasuk getUniqueCategories
 import { getPublicNews, showMessage, getUniqueCategories } from '../services/api'; 
 import NewsCard from '../components/NewsCard';
 import { Link, useParams } from 'react-router-dom'; 
 import Navbar from '../components/Navbar';
+import ParticlesBackground from '../components/ParticlesBackground';
 
 function Home() {
   const { kategori } = useParams(); 
@@ -14,26 +12,22 @@ function Home() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(kategori || ''); 
-  const [availableCategories, setAvailableCategories] = useState([]); // State untuk kategori dinamis
-
-  // Fungsi untuk mengambil kategori unik dari backend
+  const [availableCategories, setAvailableCategories] = useState([]); 
   const fetchCategories = async () => {
     try {
       const data = await getUniqueCategories();
-      // Pastikan 'Umum' ada di daftar jika belum ada dari database, lalu tambahkan di awal
       if (!data.includes('Umum')) {
           data.unshift('Umum'); 
       }
       setAvailableCategories(data);
     } catch (err) {
       console.error("Error fetching unique categories for Home:", err);
-      // showMessage("Gagal memuat daftar kategori.", "error"); // Opsional: tampilkan pesan error
     }
   };
 
   useEffect(() => {
-    fetchCategories(); // Panggil saat komponen dimuat untuk mengisi dropdown
-  }, []); // Hanya berjalan sekali saat mount
+    fetchCategories(); 
+  }, []); 
 
   useEffect(() => {
     setSelectedCategory(kategori || ''); 
@@ -96,6 +90,7 @@ function Home() {
 
   return (
     <>
+      <ParticlesBackground/>
       <Navbar />
       <div className="container mx-auto p-4">
         <h1 className="text-3xl font-bold text-center mb-6">Smart News Hub</h1>
@@ -114,7 +109,6 @@ function Home() {
             onChange={(e) => setSelectedCategory(e.target.value)}
             >
             <option value="">Semua Kategori</option>
-            {/* Menggunakan kategori dinamis yang diambil dari backend */}
             {availableCategories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
