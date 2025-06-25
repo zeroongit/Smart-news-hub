@@ -3,7 +3,6 @@ import { getPublicNews, showMessage, getUniqueCategories } from '../services/api
 import NewsCard from '../components/NewsCard';
 import { Link, useParams } from 'react-router-dom'; 
 import Navbar from '../components/Navbar';
-import ParticlesBackground from '../components/ParticlesBackground';
 
 function Home() {
   const { kategori } = useParams(); 
@@ -90,7 +89,6 @@ function Home() {
 
   return (
     <>
-      <ParticlesBackground/>
       <Navbar />
       <div className="container mx-auto p-4">
         <h1 className="text-3xl font-bold text-center mb-6">Smart News Hub</h1>

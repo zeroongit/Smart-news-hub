@@ -1,5 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import WelcomeScreen from './pages/WelcomeScreen';
 import Home from './pages/Home';
 import NewsDetails from './pages/news/NewsDetails';
@@ -11,17 +10,12 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import PrivateRoute from './components/PrivateRoute';
-import ParticlesBackground from './components/ParticlesBackground'; 
 
 function AppWrapper() {
-  const location = useLocation();
-  const hideParticles = location.pathname === '/';
-
   return (
     <>
-      {!hideParticles && <ParticlesBackground />}
-
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<WelcomeScreen />} />
         <Route path="/home" element={<Home />} />
         <Route path="/news" element={<Home />} />
@@ -29,8 +23,8 @@ function AppWrapper() {
         <Route path="/news/:kategori" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
-        {/* Protected */}
+
+        {/* Protected Routes */}
         <Route
           path="/news/create"
           element={
