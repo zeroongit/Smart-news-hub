@@ -18,7 +18,4 @@ function mongoSanitize(req, res, next) {
   next();
 }
 
-module.exports = {
-  sanitizeObject,
-  mongoSanitize
-};
+module.exports = { mongoSanitize };

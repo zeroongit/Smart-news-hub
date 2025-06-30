@@ -6,7 +6,7 @@ require('dotenv').config();
 const app = express();
 const helmet = require('helmet');
 const { mongoSanitize } = require('./middleware/mongoSanitize');
-app.use(mongoSanitize());
+app.use(mongoSanitize);
 
 
 
