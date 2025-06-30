@@ -102,7 +102,6 @@ function NewsDetails() {
             <ul className="space-y-2 text-sm text-gray-700">
               {relatedNews.map((item) => (
                 <li key={item._id}>
-                  {/* Pastikan link berita terkait menggunakan slug kategori yang benar */}
                   <Link 
                     to={`/news/${generateCategorySlug(item.kategori)}/${item._id}`} 
                     className="hover:text-indigo-500"
