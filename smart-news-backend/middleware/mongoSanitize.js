@@ -11,12 +11,14 @@ function sanitizeObject(obj) {
   }
 }
 
-
-function mongoSanitizeMiddleware(req, res, next) {
+function mongoSanitize(req, res, next) {
   sanitizeObject(req.body);
   sanitizeObject(req.query);
   sanitizeObject(req.params);
   next();
 }
 
-module.exports = mongoSanitizeMiddleware;
+module.exports = {
+  sanitizeObject,
+  mongoSanitize
+};
