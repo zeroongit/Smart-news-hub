@@ -8,7 +8,7 @@ import NewsCreate from './pages/news/NewsCreate';
 import NewsEdit from './pages/news/NewsEdit';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import PrivateRoute from './components/PrivateRoute';
 
 function AppWrapper() {
