@@ -5,8 +5,9 @@ require('dotenv').config();
 
 const app = express();
 const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
-app.use(mongoSanitize());
+const mongoSanitizeMiddleware = require('./middleware/mongoSanitize');
+app.use(mongoSanitizeMiddleware());
+
 
 
 // --- Konfigurasi CORS (izin frontend dari Vercel) ---
