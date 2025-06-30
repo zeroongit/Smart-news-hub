@@ -9,7 +9,21 @@ const logError = (err, message) => {
   console.error(`${message}:`, err.message);
 };
 
-const crypto = require('crypto'); // Untuk generate password acak
+const crypto = require('crypto'); 
+
+const rateLimit = require('express-rate-limit');
+
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 5, 
+  message: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.'
+});
+
+
+router.post('/login', loginLimiter, async (req, res) => {
+});
+
 
 router.post('/google', async (req, res) => {
   try {

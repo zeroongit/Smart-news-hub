@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom'; 
 import { getNewsDetailsByCategoryAndId, showMessage, getNewsByCategory } from '../../services/api'; 
+import DOMPurify from 'dompurify';
 
 function NewsDetails() {
   const { id, kategori } = useParams(); 
@@ -85,12 +86,11 @@ function NewsDetails() {
         )}
         <p className="text-gray-500 text-sm mb-4">
           Oleh <span className="font-medium">{newsItem.penulis}</span> pada {new Date(newsItem.created_at).toLocaleDateString()}
-          {/* Menampilkan nama kategori asli (kategori_nama) jika ada, jika tidak, gunakan kategori (slug) */}
           {newsItem.kategori_nama && <span> | Kategori: {newsItem.kategori_nama}</span>}
         </p>
         <div 
           className="prose max-w-none mb-4 text-justify" 
-          dangerouslySetInnerHTML={{ __html: newsItem.deskripsi }} 
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(newsItem.deskripsi) }} 
         />
       </div>
 

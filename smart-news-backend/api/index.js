@@ -4,6 +4,10 @@ const cors = require('cors');
 require('dotenv').config(); 
 
 const app = express();
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+app.use(mongoSanitize());
+
 
 // --- Konfigurasi CORS (izin frontend dari Vercel) ---
 const corsOptions = {
@@ -43,6 +47,7 @@ app.use('/api/news', newsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes); 
 app.use('/api/users', UserRoutes);
+app.use(helmet());
 
 // --- Endpoint root ---
 app.get('/api', async (req, res) => {
