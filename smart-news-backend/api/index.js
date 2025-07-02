@@ -8,6 +8,16 @@ const helmet = require('helmet');
 const { mongoSanitize } = require('../middleware/mongoSanitize');
 app.use(mongoSanitize);
 
+const rateLimit = require('express-rate-limit');
+
+app.set('trust proxy', true);
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 5, 
+  message: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.'
+});
+app.use(loginLimiter);
+
 
 
 // --- Konfigurasi CORS (izin frontend dari Vercel) ---
