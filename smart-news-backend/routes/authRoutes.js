@@ -12,9 +12,6 @@ const logError = (err, message) => {
 const crypto = require('crypto'); 
 
 
-router.post('/login', loginLimiter, async (req, res) => {
-});
-
 
 router.post('/google', async (req, res) => {
   try {
