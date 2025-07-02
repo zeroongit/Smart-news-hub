@@ -13,13 +13,13 @@ const crypto = require('crypto');
 
 const rateLimit = require('express-rate-limit');
 
-
+app.set('trust proxy', true);
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
   max: 5, 
   message: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.'
 });
-
+app.use(loginLimiter);
 
 router.post('/login', loginLimiter, async (req, res) => {
 });
