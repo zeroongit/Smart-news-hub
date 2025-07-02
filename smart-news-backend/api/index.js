@@ -10,7 +10,7 @@ app.use(mongoSanitize);
 
 const rateLimit = require('express-rate-limit');
 
-app.set('trust proxy', true);
+app.set('trust proxy', 'loopback');
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
   max: 5, 
