@@ -11,25 +11,30 @@ app.use(mongoSanitize);
 const rateLimit = require('express-rate-limit');
 
 app.set('trust proxy', 'loopback');
-const loginLimiter = rateLimit({
+const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
-  max: 5, 
-  message: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.'
+  max: 100,
+  message: 'Terlalu banyak permintaan dari IP ini. Coba lagi nanti.',
+  skip: (req) => req.method === 'OPTIONS' 
 });
-app.use(loginLimiter);
+
+app.use(limiter);
 
 
 
 // --- Konfigurasi CORS (izin frontend dari Vercel) ---
-const corsOptions = {
-  origin: ['https://smart-news-hub.vercel.app', 'http://localhost:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
-app.use(cors(corsOptions));
-app.use(express.json());
+const allowedOrigins = ['https://smart-news-hub.vercel.app'];
 
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
+  credentials: true,
+}));
 // --- Koneksi MongoDB ---
 const MONGO_URI = process.env.MONGO_URI;
 let isConnected = false;
