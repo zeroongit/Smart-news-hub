@@ -4,6 +4,8 @@ const cors = require('cors');
 require('dotenv').config(); 
 
 const app = express();
+app.use(express.json());
+
 const helmet = require('helmet');
 const { mongoSanitize } = require('../middleware/mongoSanitize');
 app.use(mongoSanitize);
